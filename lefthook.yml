@@ -1,0 +1,30 @@
+# Lefthook configuration for git hooks
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: false
+  commands:
+    typecheck:
+      glob: '*.{ts,tsx}'
+      run: bun run typecheck
+      stage_fixed: true
+
+    lint:
+      glob: '*.{ts,tsx,js,jsx}'
+      run: bun run lint:fix
+      stage_fixed: true
+
+    format:
+      glob: '*.{ts,tsx,js,jsx,json,md,yml,yaml,css}'
+      run: bun run format:fix
+      stage_fixed: true
+
+    test:
+      run: bun run test
+      stage_fixed: false
+
+pre-push:
+  parallel: true
+  commands:
+    verify:
+      run: bun run verify

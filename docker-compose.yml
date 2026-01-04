@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  appz-kanban:
+    image: ghcr.io/kleyson/appz-kanban:latest
+    container_name: appz-kanban
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - DATABASE_PATH=/app/data/kanban.db
+    volumes:
+      - appz-kanban-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  appz-kanban-data:
+    driver: local

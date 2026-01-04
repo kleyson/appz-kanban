@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+client/node_modules
+server/node_modules
+
+# Build output
+client/dist
+server/dist
+
+# Development files
+.git
+.gitignore
+.env
+.env.local
+*.md
+LICENSE
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.ts
+*.test.tsx
+**/test/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Data directory (mounted as volume)
+data/

@@ -1,0 +1,43 @@
+{
+  "name": "appz-kanban",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"bun run dev:server\" \"bun run dev:client\"",
+    "dev:client": "bun --filter client dev",
+    "dev:server": "bun --filter server dev",
+    "build": "bun --filter client build && bun --filter server build",
+    "db:migrate": "bun --filter server db:migrate",
+    "test": "bun --filter client test && bun --filter server test",
+    "test:client": "bun --filter client test",
+    "test:server": "bun --filter server test",
+    "typecheck": "bun --filter client typecheck && bun --filter server typecheck",
+    "lint": "eslint client/src server/src",
+    "lint:fix": "eslint client/src server/src --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "verify": "bun run typecheck && bun run lint && bun run format && bun run test",
+    "bump": "bun scripts/bump-version.ts patch",
+    "bump:patch": "bun scripts/bump-version.ts patch",
+    "bump:minor": "bun scripts/bump-version.ts minor",
+    "bump:major": "bun scripts/bump-version.ts major",
+    "postinstall": "lefthook install"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "lefthook": "^1.6.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.3"
+  }
+}
