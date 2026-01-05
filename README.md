@@ -64,7 +64,7 @@ The easiest way to run Appz Kanban is using Docker Compose. No need to clone the
    cat > .env << EOF
    PORT=3000
    JWT_SECRET=your-secret-jwt-key-change-this
-   DATABASE_PATH=sqlite://./data/kanban.db
+   DATABASE_PATH=/data/kanban.db
    EOF
    ```
 

@@ -9,9 +9,29 @@ export const users = sqliteTable(
     username: text('username').notNull().unique(),
     passwordHash: text('password_hash').notNull(),
     displayName: text('display_name').notNull(),
+    role: text('role', { enum: ['admin', 'user'] })
+      .notNull()
+      .default('user'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [index('idx_users_username').on(table.username)]
+)
+
+// Invites table
+export const invites = sqliteTable(
+  'invites',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    code: text('code').notNull().unique(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    usedBy: integer('used_by').references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: text('expires_at').notNull(),
+    usedAt: text('used_at'),
+    createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [index('idx_invites_code').on(table.code)]
 )
 
 // Boards table
@@ -138,6 +158,19 @@ export const usersRelations = relations(users, ({ many }) => ({
   boardMemberships: many(boardMembers),
   assignedCards: many(cards),
   settings: many(userSettings),
+  createdInvites: many(invites, { relationName: 'createdInvites' }),
+}))
+
+export const invitesRelations = relations(invites, ({ one }) => ({
+  creator: one(users, {
+    fields: [invites.createdBy],
+    references: [users.id],
+    relationName: 'createdInvites',
+  }),
+  usedByUser: one(users, {
+    fields: [invites.usedBy],
+    references: [users.id],
+  }),
 }))
 
 export const boardsRelations = relations(boards, ({ one, many }) => ({
@@ -194,3 +227,5 @@ export type CardLabel = typeof cardLabels.$inferSelect
 export type NewCardLabel = typeof cardLabels.$inferInsert
 export type UserSetting = typeof userSettings.$inferSelect
 export type NewUserSetting = typeof userSettings.$inferInsert
+export type Invite = typeof invites.$inferSelect
+export type NewInvite = typeof invites.$inferInsert

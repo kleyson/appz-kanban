@@ -19,6 +19,7 @@ import type {
   AddMemberRequest,
   UserSettings,
   WebhookSettings,
+  Invite,
 } from '../types'
 import { useAuthStore } from '../stores/authStore'
 import { useBoardStore } from '../stores/boardStore'
@@ -54,6 +55,49 @@ export function useCurrentUser() {
     queryKey: ['currentUser'],
     queryFn: () => api.get<User>('/auth/me'),
     enabled: !!token,
+  })
+}
+
+// Setup status hook
+interface SetupStatus {
+  isSetupComplete: boolean
+}
+
+export function useSetupStatus() {
+  return useQuery({
+    queryKey: ['setupStatus'],
+    queryFn: () => api.get<SetupStatus>('/auth/setup-status'),
+    staleTime: 30000, // Cache for 30 seconds
+  })
+}
+
+// Invite hooks
+export function useInvites() {
+  return useQuery({
+    queryKey: ['invites'],
+    queryFn: () => api.get<{ invites: Invite[] }>('/invites').then((res) => res.invites),
+  })
+}
+
+export function useCreateInvite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => api.post<{ invite: Invite }>('/invites').then((res) => res.invite),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invites'] })
+    },
+  })
+}
+
+export function useRevokeInvite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (inviteId: number) => api.delete(`/invites/${inviteId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invites'] })
+    },
   })
 }
 
@@ -138,6 +182,23 @@ export function useDeleteColumn() {
     onSuccess: (_, columnId) => {
       removeColumn(columnId)
       queryClient.invalidateQueries({ queryKey: ['board'] })
+    },
+  })
+}
+
+export function useReorderColumns(boardId: number) {
+  const queryClient = useQueryClient()
+  const reorderColumns = useBoardStore((state) => state.reorderColumns)
+
+  return useMutation({
+    mutationFn: (columnIds: number[]) =>
+      api.put<{ success: boolean }>(`/boards/${boardId}/columns/reorder`, { columnIds }),
+    onMutate: async (columnIds) => {
+      // Optimistic update
+      reorderColumns(columnIds)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['board', boardId] })
     },
   })
 }

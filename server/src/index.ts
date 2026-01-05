@@ -9,6 +9,7 @@ import { columnController } from './controllers/columnController'
 import { cardController } from './controllers/cardController'
 import { labelController } from './controllers/labelController'
 import { settingsController } from './controllers/settingsController'
+import { inviteController } from './controllers/inviteController'
 import { wsService } from './services/WebSocketService'
 import { runMigrations } from './db/migrate'
 
@@ -142,6 +143,7 @@ const app = new Elysia()
       .use(cardController)
       .use(labelController)
       .use(settingsController)
+      .use(inviteController)
   )
   .get('/health', () => ({ status: 'ok' }))
   .get('/api/version', () => ({

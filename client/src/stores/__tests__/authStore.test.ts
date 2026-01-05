@@ -19,6 +19,7 @@ describe('authStore', () => {
       id: 1,
       username: 'testuser',
       displayName: 'Test User',
+      role: 'user' as const,
     }
 
     setAuth('test-token', mockUser)
@@ -34,6 +35,7 @@ describe('authStore', () => {
       id: 1,
       username: 'testuser',
       displayName: 'Test User',
+      role: 'user' as const,
     }
 
     setAuth('test-token', mockUser)

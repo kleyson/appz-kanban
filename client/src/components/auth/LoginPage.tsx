@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useLogin } from '../../api/hooks'
+import { useLogin, useSetupStatus } from '../../api/hooks'
+import { getErrorMessage } from '../../utils/errorMessages'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -8,6 +9,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const login = useLogin()
+  const { data: setupStatus } = useSetupStatus()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,9 +19,12 @@ export default function LoginPage() {
       await login.mutateAsync({ username, password })
       navigate('/boards')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(getErrorMessage(err))
     }
   }
+
+  // If setup is not complete, redirect to register to create admin
+  const showRegisterLink = !setupStatus?.isSetupComplete
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
@@ -91,17 +96,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-slate-400 text-sm">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
-              >
-                Create one
-              </Link>
-            </p>
-          </div>
+          {showRegisterLink && (
+            <div className="mt-6 text-center">
+              <p className="text-slate-400 text-sm">
+                No account yet?{' '}
+                <Link
+                  to="/register"
+                  className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                >
+                  Create admin account
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -5,7 +5,8 @@ const API_BASE = '/api'
 class ApiError extends Error {
   constructor(
     public status: number,
-    message: string
+    message: string,
+    public code?: string
   ) {
     super(message)
     this.name = 'ApiError'
@@ -30,14 +31,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   })
 
   if (response.status === 401) {
-    useAuthStore.getState().logout()
-    window.location.href = '/login'
-    throw new ApiError(401, 'Unauthorized')
+    // Don't redirect if we're on the login page
+    if (!window.location.pathname.includes('/login')) {
+      useAuthStore.getState().logout()
+      window.location.href = '/login'
+    }
+    throw new ApiError(401, 'Unauthorized', 'UNAUTHORIZED')
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }))
-    throw new ApiError(response.status, error.message || 'Request failed')
+    const errorData = await response.json().catch(() => ({ message: 'Request failed' }))
+    const errorInfo = errorData.error || errorData
+    throw new ApiError(response.status, errorInfo.message || 'Request failed', errorInfo.code)
   }
 
   if (response.status === 204) {

@@ -13,8 +13,13 @@ import {
   type DragEndEvent,
   type DragOverEvent,
 } from '@dnd-kit/core'
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { useBoard, useMoveCard, useCreateColumn } from '../../api/hooks'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { useBoard, useMoveCard, useCreateColumn, useReorderColumns } from '../../api/hooks'
 import { useBoardStore } from '../../stores/boardStore'
 import { useWebSocket } from '../../api/websocket'
 import { useFullscreen } from '../../hooks/useFullscreen'
@@ -22,7 +27,7 @@ import Column from './Column'
 import KanbanCard from './KanbanCard'
 import CardModal from './CardModal'
 import FullscreenBoard from './FullscreenBoard'
-import type { Card } from '../../types'
+import type { Card, ColumnWithCards } from '../../types'
 
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>()
@@ -35,8 +40,10 @@ export default function BoardView() {
   // Connect to WebSocket for real-time updates
   useWebSocket(parsedBoardId)
   const moveCard = useMoveCard()
+  const reorderColumns = useReorderColumns(parsedBoardId!)
 
   const [activeCard, setActiveCard] = useState<Card | null>(null)
+  const [activeColumn, setActiveColumn] = useState<ColumnWithCards | null>(null)
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [showAddColumn, setShowAddColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
@@ -77,8 +84,26 @@ export default function BoardView() {
     return map
   }, [currentBoard])
 
+  const columnIds = useMemo(
+    () => currentBoard?.columns.map((col) => `column-${col.id}`) ?? [],
+    [currentBoard]
+  )
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
+    const activeIdStr = active.id.toString()
+
+    // Check if dragging a column
+    if (activeIdStr.startsWith('column-')) {
+      const columnId = parseInt(activeIdStr.replace('column-', ''))
+      const column = currentBoard?.columns.find((c) => c.id === columnId)
+      if (column) {
+        setActiveColumn(column)
+        return
+      }
+    }
+
+    // Otherwise, it's a card
     const card = cardMap.get(active.id as number)
     if (card) {
       setActiveCard(card)
@@ -92,9 +117,36 @@ export default function BoardView() {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveCard(null)
+    setActiveColumn(null)
 
-    if (!over) return
+    if (!over || !currentBoard) return
 
+    const activeIdStr = active.id.toString()
+    const overIdStr = over.id.toString()
+
+    // Handle column reordering
+    if (activeIdStr.startsWith('column-') && overIdStr.startsWith('column-')) {
+      const activeColumnId = parseInt(activeIdStr.replace('column-', ''))
+      const overColumnId = parseInt(overIdStr.replace('column-', ''))
+
+      if (activeColumnId !== overColumnId) {
+        const oldIndex = currentBoard.columns.findIndex((c) => c.id === activeColumnId)
+        const newIndex = currentBoard.columns.findIndex((c) => c.id === overColumnId)
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(currentBoard.columns, oldIndex, newIndex)
+          const newColumnIds = newOrder.map((c) => c.id)
+          try {
+            await reorderColumns.mutateAsync(newColumnIds)
+          } catch (error) {
+            console.error('Failed to reorder columns:', error)
+          }
+        }
+      }
+      return
+    }
+
+    // Handle card movement
     const cardId = active.id as number
     const card = cardMap.get(cardId)
     if (!card) return
@@ -104,7 +156,6 @@ export default function BoardView() {
     let targetPosition: number
 
     // Check if dropping on a column
-    const overIdStr = over.id.toString()
     if (overIdStr.startsWith('column-')) {
       targetColumnId = parseInt(overIdStr.replace('column-', ''))
       const targetColumn = currentBoard?.columns.find((c) => c.id === targetColumnId)
@@ -221,9 +272,11 @@ export default function BoardView() {
           onDragEnd={handleDragEnd}
         >
           <div className="flex gap-4 p-6 h-full min-w-max">
-            {currentBoard.columns.map((column) => (
-              <Column key={column.id} column={column} onCardClick={setSelectedCard} />
-            ))}
+            <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
+              {currentBoard.columns.map((column) => (
+                <Column key={column.id} column={column} onCardClick={setSelectedCard} />
+              ))}
+            </SortableContext>
 
             {/* Add Column */}
             <div className="w-80 flex-shrink-0">
@@ -290,6 +343,11 @@ export default function BoardView() {
 
           <DragOverlay>
             {activeCard ? <KanbanCard card={activeCard} isDragging /> : null}
+            {activeColumn ? (
+              <div className="w-80 opacity-80">
+                <Column column={activeColumn} onCardClick={() => {}} isDragging />
+              </div>
+            ) : null}
           </DragOverlay>
         </DndContext>
       </div>

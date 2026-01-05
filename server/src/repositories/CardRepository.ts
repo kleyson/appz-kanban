@@ -79,12 +79,14 @@ export class CardRepository {
         id: users.id,
         username: users.username,
         displayName: users.displayName,
+        role: users.role,
       })
       .from(users)
       .where(eq(users.id, assigneeId))
       .get()
 
-    return row ?? null
+    if (!row) return null
+    return { ...row, role: row.role as 'admin' | 'user' }
   }
 
   create(

@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSettingsStore } from '../../stores/settingsStore'
+import { useAuthStore } from '../../stores/authStore'
 import { useUpdateSettings, useResetSettings, useVersion, useTestWebhook } from '../../api/hooks'
+import InviteManagement from './InviteManagement'
 import type { WebhookEvent } from '../../types'
 
 const WEBHOOK_EVENTS: { value: WebhookEvent; label: string }[] = [
@@ -17,7 +19,9 @@ const WEBHOOK_EVENTS: { value: WebhookEvent; label: string }[] = [
 
 export function SettingsPage() {
   const navigate = useNavigate()
+  const user = useAuthStore((state) => state.user)
   const { settings, addCustomEmoji, removeCustomEmoji } = useSettingsStore()
+  const isAdmin = user?.role === 'admin'
   const updateSettings = useUpdateSettings()
   const resetSettings = useResetSettings()
   const { data: versionInfo } = useVersion()
@@ -186,6 +190,13 @@ export function SettingsPage() {
         </div>
 
         <div className="space-y-8">
+          {/* Admin: Invite Management */}
+          {isAdmin && (
+            <section className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+              <InviteManagement />
+            </section>
+          )}
+
           {/* Default Due Date */}
           <section className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
             <h2 className="text-xl font-semibold text-white mb-4">Default Due Date</h2>

@@ -67,6 +67,7 @@ export class BoardRepository {
         role: boardMembers.role,
         username: users.username,
         displayName: users.displayName,
+        userRole: users.role,
       })
       .from(boardMembers)
       .innerJoin(users, eq(boardMembers.userId, users.id))
@@ -81,6 +82,7 @@ export class BoardRepository {
         id: row.userId,
         username: row.username,
         displayName: row.displayName,
+        role: row.userRole as 'admin' | 'user',
       },
     }))
   }

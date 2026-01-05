@@ -7,6 +7,7 @@ interface BoardState {
   updateColumn: (column: Column) => void
   addColumn: (column: Column) => void
   removeColumn: (columnId: number) => void
+  reorderColumns: (columnIds: number[]) => void
   updateCard: (card: Card) => void
   addCard: (card: Card) => void
   removeCard: (cardId: number) => void
@@ -49,6 +50,21 @@ export const useBoardStore = create<BoardState>((set) => ({
         currentBoard: {
           ...state.currentBoard,
           columns: state.currentBoard.columns.filter((c) => c.id !== columnId),
+        },
+      }
+    }),
+
+  reorderColumns: (columnIds) =>
+    set((state) => {
+      if (!state.currentBoard) return state
+      const columnMap = new Map(state.currentBoard.columns.map((c) => [c.id, c]))
+      const reorderedColumns = columnIds
+        .map((id) => columnMap.get(id))
+        .filter((c): c is (typeof state.currentBoard.columns)[0] => c !== undefined)
+      return {
+        currentBoard: {
+          ...state.currentBoard,
+          columns: reorderedColumns,
         },
       }
     }),

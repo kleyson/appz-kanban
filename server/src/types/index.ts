@@ -1,9 +1,52 @@
+// Error codes for contextual error messages
+export enum ErrorCode {
+  // Auth errors
+  USERNAME_TAKEN = 'USERNAME_TAKEN',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  INVALID_INVITE = 'INVALID_INVITE',
+  INVITE_EXPIRED = 'INVITE_EXPIRED',
+  INVITE_ALREADY_USED = 'INVITE_ALREADY_USED',
+  REGISTRATION_DISABLED = 'REGISTRATION_DISABLED',
+
+  // Validation errors
+  USERNAME_TOO_SHORT = 'USERNAME_TOO_SHORT',
+  PASSWORD_TOO_SHORT = 'PASSWORD_TOO_SHORT',
+  DISPLAY_NAME_REQUIRED = 'DISPLAY_NAME_REQUIRED',
+
+  // Permission errors
+  NOT_AUTHORIZED = 'NOT_AUTHORIZED',
+  NOT_ADMIN = 'NOT_ADMIN',
+  NOT_BOARD_OWNER = 'NOT_BOARD_OWNER',
+  NOT_BOARD_MEMBER = 'NOT_BOARD_MEMBER',
+
+  // Resource errors
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  BOARD_NOT_FOUND = 'BOARD_NOT_FOUND',
+  COLUMN_NOT_FOUND = 'COLUMN_NOT_FOUND',
+  CARD_NOT_FOUND = 'CARD_NOT_FOUND',
+  INVITE_NOT_FOUND = 'INVITE_NOT_FOUND',
+}
+
+// Custom error class with code
+export class AppError extends Error {
+  constructor(
+    public code: ErrorCode,
+    message: string
+  ) {
+    super(message)
+    this.name = 'AppError'
+  }
+}
+
 // User types
+export type UserRole = 'admin' | 'user'
+
 export interface User {
   id: number
   username: string
   passwordHash: string
   displayName: string
+  role: UserRole
   createdAt: string
 }
 
@@ -11,6 +54,22 @@ export interface UserPublic {
   id: number
   username: string
   displayName: string
+  role: UserRole
+}
+
+// Invite types
+export interface Invite {
+  id: number
+  code: string
+  createdBy: number
+  usedBy: number | null
+  expiresAt: string
+  usedAt: string | null
+  createdAt: string
+}
+
+export interface InviteWithCreator extends Invite {
+  creator?: UserPublic
 }
 
 // Board types
@@ -87,6 +146,7 @@ export interface RegisterRequest {
   username: string
   password: string
   displayName: string
+  inviteCode?: string
 }
 
 export interface AuthResponse {

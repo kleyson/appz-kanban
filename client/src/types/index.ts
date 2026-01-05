@@ -1,8 +1,23 @@
 // User types
+export type UserRole = 'admin' | 'user'
+
 export interface User {
   id: number
   username: string
   displayName: string
+  role: UserRole
+}
+
+// Invite types
+export interface Invite {
+  id: number
+  code: string
+  createdBy: number
+  usedBy: number | null
+  expiresAt: string
+  usedAt: string | null
+  createdAt: string
+  creator?: User
 }
 
 // Board types
@@ -86,6 +101,7 @@ export interface RegisterRequest {
   username: string
   password: string
   displayName: string
+  inviteCode?: string
 }
 
 export interface AuthResponse {
