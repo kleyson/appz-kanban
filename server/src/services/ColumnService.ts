@@ -1,5 +1,6 @@
 import { columnRepository } from '../repositories/ColumnRepository'
 import { boardRepository } from '../repositories/BoardRepository'
+import { webhookService } from './WebhookService'
 import type { Column } from '../types'
 
 export class ColumnService {
@@ -9,7 +10,15 @@ export class ColumnService {
       throw new Error('Access denied')
     }
 
-    return columnRepository.create(boardId, name)
+    const column = columnRepository.create(boardId, name)
+
+    // Send webhook
+    webhookService.send(userId, 'column.created', {
+      column,
+      boardId,
+    })
+
+    return column
   }
 
   updateColumn(columnId: number, userId: number, data: { name?: string }): Column | null {
@@ -33,7 +42,17 @@ export class ColumnService {
       throw new Error('Access denied')
     }
 
-    return columnRepository.delete(columnId)
+    const success = columnRepository.delete(columnId)
+
+    // Send webhook
+    if (success) {
+      webhookService.send(userId, 'column.deleted', {
+        columnId,
+        boardId: column.boardId,
+      })
+    }
+
+    return success
   }
 
   reorderColumns(boardId: number, userId: number, columnIds: number[]): void {

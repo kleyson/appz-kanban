@@ -1,6 +1,7 @@
 import { cardRepository } from '../repositories/CardRepository'
 import { columnRepository } from '../repositories/ColumnRepository'
 import { boardRepository } from '../repositories/BoardRepository'
+import { settingsRepository } from '../repositories/SettingsRepository'
 import { webhookService } from './WebhookService'
 import type { Card, Priority, Subtask } from '../types'
 
@@ -25,7 +26,16 @@ export class CardService {
       throw new Error('Access denied')
     }
 
-    const card = cardRepository.create(columnId, data)
+    // Apply default due date from settings if not provided
+    let cardData = { ...data }
+    if (!cardData.dueDate) {
+      const settings = settingsRepository.findByUserId(userId)
+      const dueDate = new Date()
+      dueDate.setDate(dueDate.getDate() + settings.defaultDueDays)
+      cardData.dueDate = dueDate.toISOString()
+    }
+
+    const card = cardRepository.create(columnId, cardData)
 
     // Send webhook
     webhookService.send(userId, 'card.created', {

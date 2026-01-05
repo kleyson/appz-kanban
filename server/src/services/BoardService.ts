@@ -2,6 +2,8 @@ import { boardRepository } from '../repositories/BoardRepository'
 import { columnRepository } from '../repositories/ColumnRepository'
 import { cardRepository } from '../repositories/CardRepository'
 import { labelRepository } from '../repositories/LabelRepository'
+import { settingsRepository } from '../repositories/SettingsRepository'
+import { webhookService } from './WebhookService'
 import type { Board, BoardWithDetails, ColumnWithCards } from '../types'
 
 export class BoardService {
@@ -38,7 +40,20 @@ export class BoardService {
   }
 
   createBoard(name: string, userId: number): Board {
-    return boardRepository.create(name, userId)
+    const board = boardRepository.create(name, userId)
+
+    // Create default columns from user settings
+    const settings = settingsRepository.findByUserId(userId)
+    for (const columnName of settings.defaultColumns) {
+      columnRepository.create(board.id, columnName)
+    }
+
+    // Send webhook
+    webhookService.send(userId, 'board.created', {
+      board,
+    })
+
+    return board
   }
 
   updateBoard(boardId: number, userId: number, data: { name?: string }): Board | null {

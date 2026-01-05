@@ -1,5 +1,6 @@
 import { labelRepository } from '../repositories/LabelRepository'
 import { boardRepository } from '../repositories/BoardRepository'
+import { webhookService } from './WebhookService'
 import type { Label } from '../types'
 
 export class LabelService {
@@ -18,7 +19,15 @@ export class LabelService {
       throw new Error('Access denied')
     }
 
-    return labelRepository.create(boardId, name, color)
+    const label = labelRepository.create(boardId, name, color)
+
+    // Send webhook
+    webhookService.send(userId, 'label.created', {
+      label,
+      boardId,
+    })
+
+    return label
   }
 
   updateLabel(

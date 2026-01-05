@@ -26,6 +26,18 @@ class SettingsRepository {
           ...DEFAULT_SETTINGS.fullscreen,
           ...(parsed.fullscreen || {}),
         },
+        cardRotting: {
+          ...DEFAULT_SETTINGS.cardRotting,
+          ...(parsed.cardRotting || {}),
+          thresholds: {
+            ...DEFAULT_SETTINGS.cardRotting.thresholds,
+            ...(parsed.cardRotting?.thresholds || {}),
+          },
+        },
+        webhook: {
+          ...DEFAULT_SETTINGS.webhook,
+          ...(parsed.webhook || {}),
+        },
       }
     } catch {
       return DEFAULT_SETTINGS
@@ -47,6 +59,18 @@ class SettingsRepository {
       fullscreen: {
         ...existing.fullscreen,
         ...(settings.fullscreen || {}),
+      },
+      cardRotting: {
+        ...existing.cardRotting,
+        ...(settings.cardRotting || {}),
+        thresholds: {
+          ...existing.cardRotting?.thresholds,
+          ...(settings.cardRotting?.thresholds || {}),
+        },
+      },
+      webhook: {
+        ...existing.webhook,
+        ...(settings.webhook || {}),
       },
     }
 
