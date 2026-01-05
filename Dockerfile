@@ -8,8 +8,8 @@ COPY package.json bun.lock ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
 
-# Install dependencies
-RUN bun install --frozen-lockfile
+# Install dependencies (skip postinstall hooks - lefthook needs git)
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # Copy source files
 COPY . .
