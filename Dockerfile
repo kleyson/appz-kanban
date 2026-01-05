@@ -22,6 +22,9 @@ FROM oven/bun:1-slim
 
 WORKDIR /app
 
+# Copy root package.json (for version info)
+COPY --from=builder /app/package.json ./
+
 # Copy built client
 COPY --from=builder /app/client/dist ./client/dist
 
