@@ -1,9 +1,12 @@
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
-import { join } from 'path'
+import { resolve } from 'path'
 import { db } from './connection'
 
-// Migrations folder relative to this file
-const migrationsFolder = join(import.meta.dir, '../../drizzle')
+// Migrations folder - handle both dev (src/db/) and bundled (dist/) paths
+const isBundle = import.meta.dir.endsWith('/dist')
+const migrationsFolder = isBundle
+  ? resolve(import.meta.dir, '../drizzle')
+  : resolve(import.meta.dir, '../../drizzle')
 
 /**
  * Run all pending database migrations using Drizzle

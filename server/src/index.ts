@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { swagger } from '@elysiajs/swagger'
 import { staticPlugin } from '@elysiajs/static'
+import { resolve } from 'path'
 import { authController } from './controllers/authController'
 import { boardController } from './controllers/boardController'
 import { columnController } from './controllers/columnController'
@@ -11,8 +12,9 @@ import { settingsController } from './controllers/settingsController'
 import { wsService } from './services/WebSocketService'
 import { runMigrations } from './db/migrate'
 
-// Read version from root package.json
-const rootPackageJson = await Bun.file('../package.json').json()
+// Read version from root package.json (use import.meta.dir for correct path resolution)
+const rootPackagePath = resolve(import.meta.dir, '../../package.json')
+const rootPackageJson = await Bun.file(rootPackagePath).json()
 const APP_VERSION = rootPackageJson.version || '1.0.0'
 
 // Run migrations on startup
@@ -150,22 +152,43 @@ const app = new Elysia()
   .get('/ws/stats', () => wsService.getStats())
 
 // In production, serve static files from client/dist
+// Resolve to absolute path (static plugin needs clean paths)
+const clientDistPath = resolve(import.meta.dir, '../../client/dist')
+console.log(`📂 Static files path: ${clientDistPath}`)
+
 if (!isDev) {
+  // Check if client dist exists
+  const indexFile = Bun.file(`${clientDistPath}/index.html`)
+  if (!(await indexFile.exists())) {
+    console.error(`❌ Client dist not found at: ${clientDistPath}`)
+    console.error(`   Expected index.html at: ${clientDistPath}/index.html`)
+  } else {
+    console.log(`✅ Client dist found`)
+  }
+
   app
     .use(
       staticPlugin({
-        assets: '../client/dist',
+        assets: clientDistPath,
         prefix: '/',
-        alwaysStatic: false,
+        indexHTML: false, // Disable automatic index.html handling - we handle SPA fallback manually
       })
     )
-    // SPA fallback - serve index.html for non-API routes
+    // SPA fallback - serve index.html for all non-asset routes
     .get('*', async ({ path }) => {
-      // Skip API and WebSocket routes
-      if (path.startsWith('/api') || path.startsWith('/ws') || path === '/health') {
+      // Skip API, WebSocket, and asset routes
+      if (
+        path.startsWith('/api') ||
+        path.startsWith('/ws') ||
+        path === '/health' ||
+        path.startsWith('/assets')
+      ) {
         return
       }
-      return Bun.file('../client/dist/index.html')
+      const file = Bun.file(`${clientDistPath}/index.html`)
+      return new Response(file, {
+        headers: { 'Content-Type': 'text/html' },
+      })
     })
 }
 
