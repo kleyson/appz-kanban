@@ -13,17 +13,17 @@ import {
   getRotOverlay,
 } from '../../utils/dateUtils'
 import { parseEmojis, getMarkdownPreview } from '../../utils/markdown'
+import {
+  priorityConfig,
+  getProgressColor,
+  generateMoldSpots,
+  calculateSubtaskProgress,
+} from './helpers'
 
 interface KanbanCardProps {
   card: Card
   isDragging?: boolean
   onClick?: () => void
-}
-
-const priorityConfig = {
-  low: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', label: 'Low' },
-  medium: { bg: 'bg-amber-500/20', text: 'text-amber-400', label: 'Med' },
-  high: { bg: 'bg-red-500/20', text: 'text-red-400', label: 'High' },
 }
 
 export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProps) {
@@ -47,9 +47,8 @@ export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProp
 
   // Calculate subtask progress
   const subtasks = card.subtasks || []
-  const completedSubtasks = subtasks.filter((s) => s.completed).length
-  const totalSubtasks = subtasks.length
-  const progressPercent = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0
+  const { completed: completedSubtasks, total: totalSubtasks, percent: progressPercent } =
+    calculateSubtaskProgress(subtasks)
 
   // Get due date warning level
   const warningLevel = getDueDateWarningLevel(card.dueDate, settings.dueDateWarnings)
@@ -60,14 +59,6 @@ export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProp
   const rotLevel = getRotLevel(card.updatedAt, settings.cardRotting)
   const rotClasses = getRotClasses(rotLevel)
   const rotOverlay = getRotOverlay(rotLevel)
-
-  // Progress bar color based on completion
-  const getProgressColor = () => {
-    if (progressPercent === 100) return 'bg-emerald-500'
-    if (progressPercent >= 75) return 'bg-primary-500'
-    if (progressPercent >= 50) return 'bg-amber-500'
-    return 'bg-slate-500'
-  }
 
   // Parse emojis in title and description
   const titleWithEmoji = useMemo(
@@ -81,27 +72,21 @@ export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProp
 
   // Generate mold spots for rot effect
   const moldSpots = useMemo(() => {
-    if (rotOverlay.spots === 0) return null
-    const spots = []
-    for (let i = 0; i < rotOverlay.spots; i++) {
-      const size = 4 + Math.random() * 8
-      const top = Math.random() * 100
-      const left = Math.random() * 100
-      spots.push(
-        <div
-          key={i}
-          className="absolute rounded-full bg-emerald-900/60 blur-sm pointer-events-none"
-          style={{
-            width: `${size}px`,
-            height: `${size}px`,
-            top: `${top}%`,
-            left: `${left}%`,
-            opacity: rotOverlay.opacity,
-          }}
-        />
-      )
-    }
-    return spots
+    const spots = generateMoldSpots(rotOverlay.spots, rotOverlay.opacity)
+    if (spots.length === 0) return null
+    return spots.map((spot) => (
+      <div
+        key={spot.id}
+        className="absolute rounded-full bg-emerald-900/60 blur-sm pointer-events-none"
+        style={{
+          width: `${spot.size}px`,
+          height: `${spot.size}px`,
+          top: `${spot.top}%`,
+          left: `${spot.left}%`,
+          opacity: spot.opacity,
+        }}
+      />
+    ))
   }, [rotOverlay.spots, rotOverlay.opacity])
 
   return (
@@ -130,7 +115,7 @@ export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProp
       {totalSubtasks > 0 && (
         <div className="h-1 bg-slate-700/50">
           <div
-            className={`h-full ${getProgressColor()} transition-all duration-300`}
+            className={`h-full ${getProgressColor(progressPercent)} transition-all duration-300`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
