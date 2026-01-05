@@ -7,10 +7,20 @@ import * as schema from './schema'
 // Use environment variable or default to relative path
 const dbPath = process.env.DATABASE_PATH || join(import.meta.dir, '../../data/kanban.db')
 
+// Check if this is a new database
+const isNewDatabase = !existsSync(dbPath)
+
 // Ensure data directory exists
 const dataDir = dirname(dbPath)
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir, { recursive: true })
+}
+
+// Log database status
+if (isNewDatabase) {
+  console.log(`🗄️  Creating new database: ${dbPath}`)
+} else {
+  console.log(`🗄️  Using existing database: ${dbPath}`)
 }
 
 // Create SQLite database
