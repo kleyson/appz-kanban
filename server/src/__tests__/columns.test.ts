@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { testDb, createTestUser, createTestBoard, createTestColumn } from './setup'
+import { testDb, createTestUser, createTestBoard, createTestColumn, setupTests } from './setup'
 
 describe('Columns API', () => {
+  setupTests()
+
   let testUser: ReturnType<typeof createTestUser>
   let testBoard: ReturnType<typeof createTestBoard>
 

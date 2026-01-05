@@ -1,4 +1,4 @@
-import type { RotLevel, Card, ColumnWithCards } from '../../types'
+import type { Card, ColumnWithCards } from '../../types'
 
 /**
  * Priority configuration for display styling

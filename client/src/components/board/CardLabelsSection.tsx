@@ -106,9 +106,7 @@ export default function CardLabelsSection({
                     setLabelSearch('')
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2 transition-colors cursor-pointer ${
-                    selectedLabels.includes(label.id)
-                      ? 'bg-slate-700'
-                      : 'hover:bg-slate-700'
+                    selectedLabels.includes(label.id) ? 'bg-slate-700' : 'hover:bg-slate-700'
                   }`}
                 >
                   <div

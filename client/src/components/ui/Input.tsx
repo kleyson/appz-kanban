@@ -10,8 +10,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       'w-full text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-colors'
 
     const variantStyles = {
-      default:
-        'px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl',
+      default: 'px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl',
       transparent: 'bg-transparent border-none focus:ring-0',
     }
 

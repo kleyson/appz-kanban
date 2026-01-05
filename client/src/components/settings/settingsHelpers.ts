@@ -44,11 +44,6 @@ export function formatShortcode(shortcode: string): string {
 /**
  * Toggle webhook event in array
  */
-export function toggleWebhookEvent(
-  events: WebhookEvent[],
-  event: WebhookEvent
-): WebhookEvent[] {
-  return events.includes(event)
-    ? events.filter((e) => e !== event)
-    : [...events, event]
+export function toggleWebhookEvent(events: WebhookEvent[], event: WebhookEvent): WebhookEvent[] {
+  return events.includes(event) ? events.filter((e) => e !== event) : [...events, event]
 }

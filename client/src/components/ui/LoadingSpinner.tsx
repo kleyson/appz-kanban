@@ -9,10 +9,7 @@ const sizeStyles = {
   lg: 'w-12 h-12 border-4',
 }
 
-export default function LoadingSpinner({
-  size = 'md',
-  className = '',
-}: LoadingSpinnerProps) {
+export default function LoadingSpinner({ size = 'md', className = '' }: LoadingSpinnerProps) {
   return (
     <div
       className={`${sizeStyles[size]} border-primary-500 border-t-transparent rounded-full animate-spin ${className}`}

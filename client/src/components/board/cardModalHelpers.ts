@@ -73,10 +73,7 @@ export interface EmojiSearchState {
 /**
  * Parse emoji shortcode from text input
  */
-export function parseEmojiShortcode(
-  value: string,
-  cursorPos: number
-): EmojiSearchState | null {
+export function parseEmojiShortcode(value: string, cursorPos: number): EmojiSearchState | null {
   const textBeforeCursor = value.substring(0, cursorPos)
   const colonMatch = textBeforeCursor.match(/:([a-zA-Z0-9_+-]*)$/)
 

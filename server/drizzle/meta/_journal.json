@@ -15,6 +15,13 @@
       "when": 1767648995694,
       "tag": "0001_add_invites_and_user_role",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1767654382476,
+      "tag": "0002_aberrant_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

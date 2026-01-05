@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { testDb, createTestUser } from './setup'
+import { testDb, createTestUser, setupTests } from './setup'
 
 describe('Settings API', () => {
+  setupTests()
+
   let testUser: ReturnType<typeof createTestUser>
 
   beforeEach(() => {

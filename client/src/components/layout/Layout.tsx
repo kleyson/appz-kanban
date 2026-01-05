@@ -1,16 +1,17 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { useSettings } from '../../api/hooks'
+import { logoutWithServer } from '../../api/client'
 
 export default function Layout() {
-  const { user, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const navigate = useNavigate()
 
   // Fetch and sync settings from server on app load
   useSettings()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logoutWithServer()
     navigate('/login')
   }
 

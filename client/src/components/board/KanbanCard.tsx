@@ -47,8 +47,11 @@ export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProp
 
   // Calculate subtask progress
   const subtasks = card.subtasks || []
-  const { completed: completedSubtasks, total: totalSubtasks, percent: progressPercent } =
-    calculateSubtaskProgress(subtasks)
+  const {
+    completed: completedSubtasks,
+    total: totalSubtasks,
+    percent: progressPercent,
+  } = calculateSubtaskProgress(subtasks)
 
   // Get due date warning level
   const warningLevel = getDueDateWarningLevel(card.dueDate, settings.dueDateWarnings)

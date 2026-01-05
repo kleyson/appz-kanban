@@ -9,15 +9,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    {
-      className = '',
-      variant = 'primary',
-      size = 'md',
-      children,
-      disabled,
-      isLoading,
-      ...props
-    },
+    { className = '', variant = 'primary', size = 'md', children, disabled, isLoading, ...props },
     ref
   ) => {
     const baseStyles =
@@ -26,14 +18,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const variantStyles = {
       primary:
         'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white',
-      secondary:
-        'bg-slate-700 hover:bg-slate-600 text-white',
-      danger:
-        'text-red-400 hover:text-red-300 hover:bg-red-500/10',
-      ghost:
-        'text-slate-300 hover:text-white hover:bg-slate-700/50',
-      text:
-        'text-primary-400 hover:text-primary-300 hover:bg-primary-500/10',
+      secondary: 'bg-slate-700 hover:bg-slate-600 text-white',
+      danger: 'text-red-400 hover:text-red-300 hover:bg-red-500/10',
+      ghost: 'text-slate-300 hover:text-white hover:bg-slate-700/50',
+      text: 'text-primary-400 hover:text-primary-300 hover:bg-primary-500/10',
     }
 
     const sizeStyles = {

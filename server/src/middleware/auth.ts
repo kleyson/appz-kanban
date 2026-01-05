@@ -5,12 +5,15 @@ import type { UserPublic } from '../types'
 
 const jwtSecret = process.env.JWT_SECRET || 'kanban-secret-key-change-in-production'
 
+// Access token expires in 60 minutes
+const ACCESS_TOKEN_EXPIRY = '60m'
+
 // JWT plugin for signing tokens (used in login/register)
 export const jwtPlugin = new Elysia({ name: 'jwt' }).use(
   jwt({
     name: 'jwt',
     secret: jwtSecret,
-    exp: '7d',
+    exp: ACCESS_TOKEN_EXPIRY,
   })
 )
 
@@ -46,7 +49,7 @@ export const authPlugin = new Elysia({ name: 'auth' })
     jwt({
       name: 'jwt',
       secret: jwtSecret,
-      exp: '7d',
+      exp: ACCESS_TOKEN_EXPIRY,
     })
   )
   .derive({ as: 'scoped' }, async ({ jwt, headers }): Promise<{ user: UserPublic | null }> => {

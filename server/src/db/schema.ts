@@ -152,6 +152,24 @@ export const userSettings = sqliteTable('user_settings', {
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 })
 
+// Refresh tokens table for persistent sessions
+export const refreshTokens = sqliteTable(
+  'refresh_tokens',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(),
+    expiresAt: integer('expires_at').notNull(), // Unix timestamp
+    createdAt: integer('created_at').default(sql`(unixepoch())`),
+  },
+  (table) => [
+    index('idx_refresh_tokens_user').on(table.userId),
+    index('idx_refresh_tokens_token').on(table.token),
+  ]
+)
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   boards: many(boards),
@@ -159,6 +177,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   assignedCards: many(cards),
   settings: many(userSettings),
   createdInvites: many(invites, { relationName: 'createdInvites' }),
+  refreshTokens: many(refreshTokens),
+}))
+
+export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({
+  user: one(users, { fields: [refreshTokens.userId], references: [users.id] }),
 }))
 
 export const invitesRelations = relations(invites, ({ one }) => ({
@@ -229,3 +252,5 @@ export type UserSetting = typeof userSettings.$inferSelect
 export type NewUserSetting = typeof userSettings.$inferInsert
 export type Invite = typeof invites.$inferSelect
 export type NewInvite = typeof invites.$inferInsert
+export type RefreshToken = typeof refreshTokens.$inferSelect
+export type NewRefreshToken = typeof refreshTokens.$inferInsert

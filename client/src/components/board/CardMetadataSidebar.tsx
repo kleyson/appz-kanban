@@ -40,9 +40,7 @@ export default function CardMetadataSidebar({
     <div className="lg:w-56 space-y-4 flex-shrink-0">
       {/* Due date */}
       <div>
-        <label className="block text-sm font-medium text-slate-400 mb-2">
-          Due Date & Time
-        </label>
+        <label className="block text-sm font-medium text-slate-400 mb-2">Due Date & Time</label>
         {mode === 'edit' ? (
           <input
             type="datetime-local"
@@ -213,12 +211,7 @@ export default function CardMetadataSidebar({
                 }
               >
                 {colorOptions.includes(color) && (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

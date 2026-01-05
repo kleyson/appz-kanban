@@ -15,3 +15,9 @@ export type { ModalProps, ModalHeaderProps, ModalBodyProps, ModalFooterProps } f
 
 export { default as Avatar } from './Avatar'
 export type { AvatarProps } from './Avatar'
+
+export { default as ErrorBoundary } from './ErrorBoundary'
+export type { ErrorBoundaryProps } from './ErrorBoundary'
+
+export { default as ErrorFallback } from './ErrorFallback'
+export type { ErrorFallbackProps } from './ErrorFallback'

@@ -1,29 +1,64 @@
 import { Database } from 'bun:sqlite'
-import { beforeAll, afterAll, afterEach } from 'bun:test'
+import { beforeEach } from 'bun:test'
 
-// Create in-memory database for tests
-export const testDb = new Database(':memory:')
+// Each test file gets its own database instance via this factory
+let testDbInstance: Database | null = null
 
-// Enable foreign keys
-testDb.run('PRAGMA foreign_keys = ON')
+export function getTestDb(): Database {
+  if (!testDbInstance) {
+    testDbInstance = new Database(':memory:')
+    testDbInstance.run('PRAGMA foreign_keys = ON')
+    runMigrations(testDbInstance)
+  }
+  return testDbInstance
+}
+
+// For backward compatibility
+export const testDb = {
+  get instance() {
+    return getTestDb()
+  },
+  run(...args: Parameters<Database['run']>) {
+    return getTestDb().run(...args)
+  },
+  query(...args: Parameters<Database['query']>) {
+    return getTestDb().query(...args)
+  },
+}
 
 // Run all migrations
-function runMigrations() {
+function runMigrations(db: Database) {
   // Users
-  testDb.run(`
-    CREATE TABLE users (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
       display_name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'user',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `)
-  testDb.run('CREATE INDEX idx_users_username ON users(username)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)')
+
+  // Invites
+  db.run(`
+    CREATE TABLE IF NOT EXISTS invites (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT NOT NULL UNIQUE,
+      created_by INTEGER NOT NULL,
+      used_by INTEGER,
+      expires_at DATETIME NOT NULL,
+      used_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (used_by) REFERENCES users(id) ON DELETE SET NULL
+    )
+  `)
 
   // Boards
-  testDb.run(`
-    CREATE TABLE boards (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS boards (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       owner_id INTEGER NOT NULL,
@@ -32,11 +67,11 @@ function runMigrations() {
       FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `)
-  testDb.run('CREATE INDEX idx_boards_owner ON boards(owner_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_boards_owner ON boards(owner_id)')
 
   // Board members
-  testDb.run(`
-    CREATE TABLE board_members (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS board_members (
       board_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
       role TEXT NOT NULL DEFAULT 'member',
@@ -48,8 +83,8 @@ function runMigrations() {
   `)
 
   // Columns
-  testDb.run(`
-    CREATE TABLE columns (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS columns (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       board_id INTEGER NOT NULL,
       name TEXT NOT NULL,
@@ -58,11 +93,11 @@ function runMigrations() {
       FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
     )
   `)
-  testDb.run('CREATE INDEX idx_columns_board ON columns(board_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_columns_board ON columns(board_id)')
 
   // Labels
-  testDb.run(`
-    CREATE TABLE labels (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS labels (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       board_id INTEGER NOT NULL,
       name TEXT NOT NULL,
@@ -71,11 +106,11 @@ function runMigrations() {
       FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
     )
   `)
-  testDb.run('CREATE INDEX idx_labels_board ON labels(board_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_labels_board ON labels(board_id)')
 
   // Cards
-  testDb.run(`
-    CREATE TABLE cards (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS cards (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       column_id INTEGER NOT NULL,
       title TEXT NOT NULL,
@@ -92,11 +127,11 @@ function runMigrations() {
       FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL
     )
   `)
-  testDb.run('CREATE INDEX idx_cards_column ON cards(column_id)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_cards_column ON cards(column_id)')
 
   // Card labels
-  testDb.run(`
-    CREATE TABLE card_labels (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS card_labels (
       card_id INTEGER NOT NULL,
       label_id INTEGER NOT NULL,
       PRIMARY KEY (card_id, label_id),
@@ -106,57 +141,70 @@ function runMigrations() {
   `)
 
   // User settings
-  testDb.run(`
-    CREATE TABLE user_settings (
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_settings (
       user_id INTEGER PRIMARY KEY,
       settings TEXT NOT NULL DEFAULT '{}',
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
   `)
+
+  // Refresh tokens
+  db.run(`
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      token TEXT NOT NULL UNIQUE,
+      expires_at INTEGER NOT NULL,
+      created_at INTEGER DEFAULT (unixepoch()),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `)
 }
 
-beforeAll(() => {
-  runMigrations()
-})
-
-afterEach(() => {
-  // Clean up data after each test but keep tables
-  testDb.run('DELETE FROM card_labels')
-  testDb.run('DELETE FROM cards')
-  testDb.run('DELETE FROM labels')
-  testDb.run('DELETE FROM columns')
-  testDb.run('DELETE FROM board_members')
-  testDb.run('DELETE FROM user_settings')
-  testDb.run('DELETE FROM boards')
-  testDb.run('DELETE FROM users')
-})
-
-afterAll(() => {
-  testDb.close()
-})
+// Call this in each test file's describe block to set up proper isolation
+export function setupTests() {
+  beforeEach(() => {
+    const db = getTestDb()
+    // Clean up data before each test
+    db.run('DELETE FROM card_labels')
+    db.run('DELETE FROM cards')
+    db.run('DELETE FROM labels')
+    db.run('DELETE FROM columns')
+    db.run('DELETE FROM board_members')
+    db.run('DELETE FROM user_settings')
+    db.run('DELETE FROM refresh_tokens')
+    db.run('DELETE FROM invites')
+    db.run('DELETE FROM boards')
+    db.run('DELETE FROM users')
+  })
+}
 
 // Helper to create a test user
-export function createTestUser(username = 'testuser', displayName = 'Test User') {
+export function createTestUser(username = 'testuser', displayName = 'Test User', role = 'user') {
+  const db = getTestDb()
   const passwordHash = Bun.password.hashSync('password123')
-  const result = testDb.run(
-    'INSERT INTO users (username, password_hash, display_name) VALUES (?, ?, ?)',
-    [username, passwordHash, displayName]
+  const result = db.run(
+    'INSERT INTO users (username, password_hash, display_name, role) VALUES (?, ?, ?, ?)',
+    [username, passwordHash, displayName, role]
   )
   return {
     id: Number(result.lastInsertRowid),
     username,
     display_name: displayName,
+    role,
   }
 }
 
 // Helper to create a test board
 export function createTestBoard(ownerId: number, name = 'Test Board') {
-  const result = testDb.run('INSERT INTO boards (name, owner_id) VALUES (?, ?)', [name, ownerId])
+  const db = getTestDb()
+  const result = db.run('INSERT INTO boards (name, owner_id) VALUES (?, ?)', [name, ownerId])
   const boardId = Number(result.lastInsertRowid)
 
   // Add owner as board member
-  testDb.run("INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, 'owner')", [
+  db.run("INSERT INTO board_members (board_id, user_id, role) VALUES (?, ?, 'owner')", [
     boardId,
     ownerId,
   ])
@@ -166,7 +214,8 @@ export function createTestBoard(ownerId: number, name = 'Test Board') {
 
 // Helper to create a test column
 export function createTestColumn(boardId: number, name = 'Test Column', position = 0) {
-  const result = testDb.run('INSERT INTO columns (board_id, name, position) VALUES (?, ?, ?)', [
+  const db = getTestDb()
+  const result = db.run('INSERT INTO columns (board_id, name, position) VALUES (?, ?, ?)', [
     boardId,
     name,
     position,
@@ -176,7 +225,8 @@ export function createTestColumn(boardId: number, name = 'Test Column', position
 
 // Helper to create a test card
 export function createTestCard(columnId: number, title = 'Test Card', position = 0) {
-  const result = testDb.run('INSERT INTO cards (column_id, title, position) VALUES (?, ?, ?)', [
+  const db = getTestDb()
+  const result = db.run('INSERT INTO cards (column_id, title, position) VALUES (?, ?, ?)', [
     columnId,
     title,
     position,
@@ -186,7 +236,8 @@ export function createTestCard(columnId: number, title = 'Test Card', position =
 
 // Helper to create a test label
 export function createTestLabel(boardId: number, name = 'Test Label', color = '#ff0000') {
-  const result = testDb.run('INSERT INTO labels (board_id, name, color) VALUES (?, ?, ?)', [
+  const db = getTestDb()
+  const result = db.run('INSERT INTO labels (board_id, name, color) VALUES (?, ?, ?)', [
     boardId,
     name,
     color,

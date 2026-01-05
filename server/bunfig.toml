@@ -1,2 +1,4 @@
 [test]
-preload = ["./src/__tests__/setup.ts"]
+# Unit tests (not API tests) use the preload for in-memory database
+# API tests in src/__tests__/api/ manage their own database setup
+# Run API tests separately: DATABASE_PATH=data/test_api.db bun test src/__tests__/api/

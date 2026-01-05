@@ -104,9 +104,7 @@ export default function WebhooksSection({
                   : 'bg-red-500/20 text-red-400'
               }`}
             >
-              {testResult.success
-                ? 'Webhook test successful!'
-                : `Test failed: ${testResult.error}`}
+              {testResult.success ? 'Webhook test successful!' : `Test failed: ${testResult.error}`}
             </div>
           )}
         </div>

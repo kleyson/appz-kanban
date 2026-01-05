@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useUpdateCard, useDeleteCard, useCreateLabel } from '../../api/hooks'
+import { useEscapeKey } from '../../hooks/useEscapeKey'
 import type { Card, Label, BoardMember, Priority, Subtask } from '../../types'
 import { formatDateTime } from '../../utils/dateUtils'
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input } from '../ui'
@@ -50,19 +51,15 @@ export default function CardModal({ card, boardId, labels, members, onClose }: C
     setMode('view')
   }, [card])
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (mode === 'edit') {
-          cancelEdit()
-        } else {
-          onClose()
-        }
-      }
+  const handleEscapeKey = useCallback(() => {
+    if (mode === 'edit') {
+      cancelEdit()
+    } else {
+      onClose()
     }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
-  }, [onClose, mode, cancelEdit])
+  }, [mode, cancelEdit, onClose])
+
+  useEscapeKey(handleEscapeKey)
 
   const handleSave = async () => {
     try {
@@ -177,11 +174,7 @@ export default function CardModal({ card, boardId, labels, members, onClose }: C
             }
           />
 
-          <CardDescriptionEditor
-            description={description}
-            mode={mode}
-            onChange={setDescription}
-          />
+          <CardDescriptionEditor description={description} mode={mode} onChange={setDescription} />
 
           <CardSubtasksSection
             subtasks={subtasks}

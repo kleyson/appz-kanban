@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { testDb, createTestUser, createTestBoard, createTestLabel } from './setup'
+import { testDb, createTestUser, createTestBoard, createTestLabel, setupTests } from './setup'
 
 describe('Labels API', () => {
+  setupTests()
+
   let testUser: ReturnType<typeof createTestUser>
   let testBoard: ReturnType<typeof createTestBoard>
 

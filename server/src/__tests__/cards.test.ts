@@ -6,9 +6,12 @@ import {
   createTestColumn,
   createTestCard,
   createTestLabel,
+  setupTests,
 } from './setup'
 
 describe('Cards API', () => {
+  setupTests()
+
   let testUser: ReturnType<typeof createTestUser>
   let testBoard: ReturnType<typeof createTestBoard>
   let testColumn: ReturnType<typeof createTestColumn>

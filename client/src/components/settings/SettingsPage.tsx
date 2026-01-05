@@ -1,10 +1,9 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useAuthStore } from '../../stores/authStore'
-import { useUpdateSettings, useResetSettings, useVersion, useTestWebhook } from '../../api/hooks'
+import { useVersion } from '../../api/hooks'
+import { useSettingsForm } from '../../hooks/useSettingsForm'
 import InviteManagement from './InviteManagement'
-import type { WebhookEvent } from '../../types'
 import DueDateSettingsSection from './DueDateSettingsSection'
 import DefaultColumnsSection from './DefaultColumnsSection'
 import DueDateWarningsSection from './DueDateWarningsSection'
@@ -18,99 +17,62 @@ export function SettingsPage() {
   const user = useAuthStore((state) => state.user)
   const { settings, addCustomEmoji, removeCustomEmoji } = useSettingsStore()
   const isAdmin = user?.role === 'admin'
-  const updateSettings = useUpdateSettings()
-  const resetSettings = useResetSettings()
   const { data: versionInfo } = useVersion()
-  const testWebhook = useTestWebhook()
 
-  // Due date settings
-  const [defaultDueDays, setDefaultDueDays] = useState(settings.defaultDueDays)
-  const [defaultColumns, setDefaultColumns] = useState(settings.defaultColumns.join(', '))
+  const {
+    // Due date settings
+    defaultDueDays,
+    setDefaultDueDays,
+    defaultColumns,
+    setDefaultColumns,
 
-  // Due date warnings
-  const [urgent, setUrgent] = useState(settings.dueDateWarnings.urgent)
-  const [warning, setWarning] = useState(settings.dueDateWarnings.warning)
-  const [approaching, setApproaching] = useState(settings.dueDateWarnings.approaching)
+    // Due date warnings
+    urgent,
+    setUrgent,
+    warning,
+    setWarning,
+    approaching,
+    setApproaching,
 
-  // Fullscreen mode
-  const [autoRefresh, setAutoRefresh] = useState(settings.fullscreen.autoRefreshInterval)
-  const [showClock, setShowClock] = useState(settings.fullscreen.showClock)
+    // Fullscreen mode
+    autoRefresh,
+    setAutoRefresh,
+    showClock,
+    setShowClock,
 
-  // Card rotting
-  const [rottingEnabled, setRottingEnabled] = useState(settings.cardRotting?.enabled ?? true)
-  const [rottingSlight, setRottingSlight] = useState(settings.cardRotting?.thresholds?.slight ?? 3)
-  const [rottingMedium, setRottingMedium] = useState(settings.cardRotting?.thresholds?.medium ?? 7)
-  const [rottingHeavy, setRottingHeavy] = useState(settings.cardRotting?.thresholds?.heavy ?? 14)
+    // Card rotting
+    rottingEnabled,
+    setRottingEnabled,
+    rottingSlight,
+    setRottingSlight,
+    rottingMedium,
+    setRottingMedium,
+    rottingHeavy,
+    setRottingHeavy,
 
-  // Webhooks
-  const [webhookEnabled, setWebhookEnabled] = useState(settings.webhook?.enabled ?? false)
-  const [webhookUrl, setWebhookUrl] = useState(settings.webhook?.url ?? '')
-  const [webhookSecret, setWebhookSecret] = useState(settings.webhook?.secret ?? '')
-  const [webhookEvents, setWebhookEvents] = useState<WebhookEvent[]>(settings.webhook?.events ?? [])
-  const [webhookTestResult, setWebhookTestResult] = useState<{
-    success: boolean
-    error?: string
-  } | null>(null)
+    // Webhooks
+    webhookEnabled,
+    setWebhookEnabled,
+    webhookUrl,
+    setWebhookUrl,
+    webhookSecret,
+    setWebhookSecret,
+    webhookEvents,
+    setWebhookEvents,
+    webhookTestResult,
+    handleTestWebhook,
 
-  const handleTestWebhook = async () => {
-    setWebhookTestResult(null)
-    const result = await testWebhook.mutateAsync({
-      enabled: webhookEnabled,
-      url: webhookUrl,
-      secret: webhookSecret,
-      events: webhookEvents,
-    })
-    setWebhookTestResult(result)
-  }
+    // Actions
+    handleSave,
+    handleReset,
 
-  const handleSave = () => {
-    updateSettings.mutate({
-      defaultDueDays,
-      defaultColumns: defaultColumns
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean),
-      dueDateWarnings: { urgent, warning, approaching },
-      fullscreen: { autoRefreshInterval: autoRefresh, showClock },
-      cardRotting: {
-        enabled: rottingEnabled,
-        thresholds: {
-          slight: rottingSlight,
-          medium: rottingMedium,
-          heavy: rottingHeavy,
-        },
-      },
-      webhook: {
-        enabled: webhookEnabled,
-        url: webhookUrl,
-        secret: webhookSecret,
-        events: webhookEvents,
-      },
-    })
-  }
-
-  const handleReset = () => {
-    resetSettings.mutate(undefined, {
-      onSuccess: () => {
-        setDefaultDueDays(3)
-        setDefaultColumns('To Do, In Progress, Review, Done')
-        setUrgent(1)
-        setWarning(24)
-        setApproaching(72)
-        setAutoRefresh(30)
-        setShowClock(true)
-        setRottingEnabled(true)
-        setRottingSlight(3)
-        setRottingMedium(7)
-        setRottingHeavy(14)
-        setWebhookEnabled(false)
-        setWebhookUrl('')
-        setWebhookSecret('')
-        setWebhookEvents([])
-        setWebhookTestResult(null)
-      },
-    })
-  }
+    // Loading states
+    isSaving,
+    isResetting,
+    isTesting,
+    saveSuccess,
+    resetSuccess,
+  } = useSettingsForm()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
@@ -182,7 +144,7 @@ export function SettingsPage() {
             secret={webhookSecret}
             events={webhookEvents}
             testResult={webhookTestResult}
-            isTesting={testWebhook.isPending}
+            isTesting={isTesting}
             onEnabledChange={setWebhookEnabled}
             onUrlChange={setWebhookUrl}
             onSecretChange={setWebhookSecret}
@@ -194,21 +156,21 @@ export function SettingsPage() {
           <div className="flex gap-4">
             <button
               onClick={handleSave}
-              disabled={updateSettings.isPending}
+              disabled={isSaving}
               className="flex-1 px-6 py-3 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 text-white font-medium rounded-lg transition-colors"
             >
-              {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
+              {isSaving ? 'Saving...' : 'Save Settings'}
             </button>
             <button
               onClick={handleReset}
-              disabled={resetSettings.isPending}
+              disabled={isResetting}
               className="px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 text-white font-medium rounded-lg transition-colors"
             >
               Reset to Defaults
             </button>
           </div>
 
-          {(updateSettings.isSuccess || resetSettings.isSuccess) && (
+          {(saveSuccess || resetSuccess) && (
             <div className="text-center text-green-400">Settings saved successfully!</div>
           )}
 

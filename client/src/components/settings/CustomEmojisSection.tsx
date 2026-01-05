@@ -84,11 +84,7 @@ export default function CustomEmojisSection({
                 key={emoji.shortcode}
                 className="group relative flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-lg"
               >
-                <img
-                  src={emoji.imageData}
-                  alt={emoji.name}
-                  className="w-6 h-6 object-contain"
-                />
+                <img src={emoji.imageData} alt={emoji.name} className="w-6 h-6 object-contain" />
                 <div className="text-sm">
                   <span className="text-white">{emoji.name}</span>
                   <span className="text-slate-500 ml-2">{emoji.shortcode}</span>
@@ -114,11 +110,7 @@ export default function CustomEmojisSection({
           <div className="flex-shrink-0">
             <div className="w-16 h-16 bg-slate-800 border border-slate-600 rounded-lg flex items-center justify-center overflow-hidden">
               {newEmojiPreview ? (
-                <img
-                  src={newEmojiPreview}
-                  alt="Preview"
-                  className="w-12 h-12 object-contain"
-                />
+                <img src={newEmojiPreview} alt="Preview" className="w-12 h-12 object-contain" />
               ) : (
                 <span className="text-slate-500 text-2xl">?</span>
               )}

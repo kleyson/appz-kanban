@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   DndContext,
@@ -9,27 +9,23 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  type DragStartEvent,
-  type DragEndEvent,
-  type DragOverEvent,
 } from '@dnd-kit/core'
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
-  arrayMove,
 } from '@dnd-kit/sortable'
-import { useBoard, useMoveCard, useCreateColumn, useReorderColumns } from '../../api/hooks'
+import { useBoard, useCreateColumn } from '../../api/hooks'
 import { useBoardStore } from '../../stores/boardStore'
 import { useWebSocket } from '../../api/websocket'
 import { useFullscreen } from '../../hooks/useFullscreen'
+import { useBoardDragDrop } from '../../hooks/useBoardDragDrop'
 import { LoadingSpinner, Avatar, Input, Button } from '../ui'
 import Column from './Column'
 import KanbanCard from './KanbanCard'
 import CardModal from './CardModal'
 import FullscreenBoard from './FullscreenBoard'
-import { buildCardMap, parseDragDropTarget, isMoveNecessary } from './helpers'
-import type { Card, ColumnWithCards } from '../../types'
+import type { Card } from '../../types'
 
 export default function BoardView() {
   const { boardId } = useParams<{ boardId: string }>()
@@ -41,11 +37,14 @@ export default function BoardView() {
 
   // Connect to WebSocket for real-time updates
   useWebSocket(parsedBoardId)
-  const moveCard = useMoveCard()
-  const reorderColumns = useReorderColumns(parsedBoardId!)
 
-  const [activeCard, setActiveCard] = useState<Card | null>(null)
-  const [activeColumn, setActiveColumn] = useState<ColumnWithCards | null>(null)
+  // Drag and drop logic
+  const { activeCard, activeColumn, columnIds, handleDragStart, handleDragOver, handleDragEnd } =
+    useBoardDragDrop({
+      boardId: parsedBoardId!,
+      board: currentBoard,
+    })
+
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [showAddColumn, setShowAddColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
@@ -77,100 +76,6 @@ export default function BoardView() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
-
-  const cardMap = useMemo(
-    () => buildCardMap(currentBoard?.columns || []),
-    [currentBoard]
-  )
-
-  const columnIds = useMemo(
-    () => currentBoard?.columns.map((col) => `column-${col.id}`) ?? [],
-    [currentBoard]
-  )
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event
-    const activeIdStr = active.id.toString()
-
-    // Check if dragging a column
-    if (activeIdStr.startsWith('column-')) {
-      const columnId = parseInt(activeIdStr.replace('column-', ''))
-      const column = currentBoard?.columns.find((c) => c.id === columnId)
-      if (column) {
-        setActiveColumn(column)
-        return
-      }
-    }
-
-    // Otherwise, it's a card
-    const card = cardMap.get(active.id as number)
-    if (card) {
-      setActiveCard(card)
-    }
-  }
-
-  const handleDragOver = (_event: DragOverEvent) => {
-    // Handle drag over for visual feedback
-  }
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveCard(null)
-    setActiveColumn(null)
-
-    if (!over || !currentBoard) return
-
-    const activeIdStr = active.id.toString()
-    const overIdStr = over.id.toString()
-
-    // Handle column reordering
-    if (activeIdStr.startsWith('column-') && overIdStr.startsWith('column-')) {
-      const activeColumnId = parseInt(activeIdStr.replace('column-', ''))
-      const overColumnId = parseInt(overIdStr.replace('column-', ''))
-
-      if (activeColumnId !== overColumnId) {
-        const oldIndex = currentBoard.columns.findIndex((c) => c.id === activeColumnId)
-        const newIndex = currentBoard.columns.findIndex((c) => c.id === overColumnId)
-
-        if (oldIndex !== -1 && newIndex !== -1) {
-          const newOrder = arrayMove(currentBoard.columns, oldIndex, newIndex)
-          const newColumnIds = newOrder.map((c) => c.id)
-          try {
-            await reorderColumns.mutateAsync(newColumnIds)
-          } catch (error) {
-            console.error('Failed to reorder columns:', error)
-          }
-        }
-      }
-      return
-    }
-
-    // Handle card movement
-    const cardId = active.id as number
-    const card = cardMap.get(cardId)
-    if (!card) return
-
-    // Parse the drop target
-    const target = parseDragDropTarget(over.id, cardMap, currentBoard.columns)
-    if (!target) return
-
-    // Only move if something changed
-    if (!isMoveNecessary(card, target.columnId, target.position)) {
-      return
-    }
-
-    try {
-      await moveCard.mutateAsync({
-        cardId,
-        data: {
-          columnId: target.columnId,
-          position: target.position,
-        },
-      })
-    } catch (error) {
-      console.error('Failed to move card:', error)
-    }
-  }
 
   const handleAddColumn = async (e: React.FormEvent) => {
     e.preventDefault()

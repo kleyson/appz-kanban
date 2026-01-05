@@ -42,9 +42,7 @@ export default function Badge({
   }
 
   return (
-    <span
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-    >
+    <span className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}>
       {children}
     </span>
   )

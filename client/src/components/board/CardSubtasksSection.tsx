@@ -18,8 +18,11 @@ export default function CardSubtasksSection({
   onDeleteSubtask,
 }: CardSubtasksSectionProps) {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
-  const { completed: completedCount, total: totalCount, percent: progressPercent } =
-    calculateProgress(subtasks)
+  const {
+    completed: completedCount,
+    total: totalCount,
+    percent: progressPercent,
+  } = calculateProgress(subtasks)
 
   const handleAddSubtask = () => {
     if (!newSubtaskTitle.trim()) return
@@ -95,12 +98,7 @@ export default function CardSubtasksSection({
                 onClick={() => onDeleteSubtask(subtask.id)}
                 className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 transition-all cursor-pointer"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

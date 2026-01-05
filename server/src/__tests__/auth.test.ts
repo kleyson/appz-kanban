@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { testDb, createTestUser } from './setup'
+import { testDb, createTestUser, setupTests } from './setup'
 
 describe('Auth API', () => {
+  setupTests()
+
   describe('User Registration', () => {
     it('should create a new user', () => {
       const user = createTestUser('newuser', 'New User')

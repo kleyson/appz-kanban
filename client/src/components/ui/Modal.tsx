@@ -16,12 +16,7 @@ const maxWidthStyles = {
   '3xl': 'max-w-3xl',
 }
 
-export default function Modal({
-  children,
-  onClose,
-  maxWidth = '3xl',
-  className = '',
-}: ModalProps) {
+export default function Modal({ children, onClose, maxWidth = '3xl', className = '' }: ModalProps) {
   return (
     <div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 pt-16 z-50 overflow-y-auto"
