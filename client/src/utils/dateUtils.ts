@@ -201,3 +201,25 @@ export function getRotOverlay(level: RotLevel): {
       return { opacity: 0, spots: 0 }
   }
 }
+
+/**
+ * Format time for display (e.g., "2:30 PM")
+ */
+export function formatTime(date: Date): string {
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+/**
+ * Format date for display (e.g., "Monday, January 5")
+ */
+export function formatDisplayDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+}

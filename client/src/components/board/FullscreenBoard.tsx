@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useBoard } from '../../api/hooks'
 import { useQueryClient } from '@tanstack/react-query'
+import { LoadingSpinner } from '../ui'
 import KanbanCard from './KanbanCard'
 import CardModal from './CardModal'
+import { formatTime, formatDisplayDate } from '../../utils/dateUtils'
 import type { Card } from '../../types'
 
 interface FullscreenBoardProps {
@@ -53,25 +55,9 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
   if (!board) {
     return (
       <div className="fullscreen-mode flex items-center justify-center">
-        <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full" />
+        <LoadingSpinner size="lg" />
       </div>
     )
-  }
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    })
-  }
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-    })
   }
 
   return (
@@ -81,7 +67,7 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
         <div>
           <h1 className="text-3xl font-bold text-white">{board.name}</h1>
           {settings.fullscreen.showClock && (
-            <p className="text-slate-400 mt-1">{formatDate(currentTime)}</p>
+            <p className="text-slate-400 mt-1">{formatDisplayDate(currentTime)}</p>
           )}
         </div>
 

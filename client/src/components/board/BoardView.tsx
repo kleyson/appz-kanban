@@ -23,10 +23,12 @@ import { useBoard, useMoveCard, useCreateColumn, useReorderColumns } from '../..
 import { useBoardStore } from '../../stores/boardStore'
 import { useWebSocket } from '../../api/websocket'
 import { useFullscreen } from '../../hooks/useFullscreen'
+import { LoadingSpinner, Avatar, Input, Button } from '../ui'
 import Column from './Column'
 import KanbanCard from './KanbanCard'
 import CardModal from './CardModal'
 import FullscreenBoard from './FullscreenBoard'
+import { buildCardMap, parseDragDropTarget, isMoveNecessary } from './helpers'
 import type { Card, ColumnWithCards } from '../../types'
 
 export default function BoardView() {
@@ -76,13 +78,10 @@ export default function BoardView() {
     })
   )
 
-  const cardMap = useMemo(() => {
-    const map = new Map<number, Card>()
-    currentBoard?.columns.forEach((col) => {
-      col.cards.forEach((card) => map.set(card.id, card))
-    })
-    return map
-  }, [currentBoard])
+  const cardMap = useMemo(
+    () => buildCardMap(currentBoard?.columns || []),
+    [currentBoard]
+  )
 
   const columnIds = useMemo(
     () => currentBoard?.columns.map((col) => `column-${col.id}`) ?? [],
@@ -151,25 +150,12 @@ export default function BoardView() {
     const card = cardMap.get(cardId)
     if (!card) return
 
-    // Determine target column and position
-    let targetColumnId: number
-    let targetPosition: number
-
-    // Check if dropping on a column
-    if (overIdStr.startsWith('column-')) {
-      targetColumnId = parseInt(overIdStr.replace('column-', ''))
-      const targetColumn = currentBoard?.columns.find((c) => c.id === targetColumnId)
-      targetPosition = targetColumn?.cards.length ?? 0
-    } else {
-      // Dropping on a card
-      const overCard = cardMap.get(over.id as number)
-      if (!overCard) return
-      targetColumnId = overCard.columnId
-      targetPosition = overCard.position
-    }
+    // Parse the drop target
+    const target = parseDragDropTarget(over.id, cardMap, currentBoard.columns)
+    if (!target) return
 
     // Only move if something changed
-    if (card.columnId === targetColumnId && card.position === targetPosition) {
+    if (!isMoveNecessary(card, target.columnId, target.position)) {
       return
     }
 
@@ -177,8 +163,8 @@ export default function BoardView() {
       await moveCard.mutateAsync({
         cardId,
         data: {
-          columnId: targetColumnId,
-          position: targetPosition,
+          columnId: target.columnId,
+          position: target.position,
         },
       })
     } catch (error) {
@@ -202,7 +188,7 @@ export default function BoardView() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <LoadingSpinner size="md" />
       </div>
     )
   }
@@ -245,13 +231,12 @@ export default function BoardView() {
           {/* Members avatars */}
           <div className="flex -space-x-2">
             {currentBoard.members.slice(0, 4).map((member) => (
-              <div
+              <Avatar
                 key={member.userId}
-                className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-sm font-medium ring-2 ring-slate-900"
-                title={member.user?.displayName}
-              >
-                {member.user?.displayName?.charAt(0).toUpperCase()}
-              </div>
+                name={member.user?.displayName || ''}
+                size="md"
+                className="ring-2 ring-slate-900"
+              />
             ))}
             {currentBoard.members.length > 4 && (
               <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center text-slate-300 text-xs font-medium ring-2 ring-slate-900">
@@ -285,7 +270,7 @@ export default function BoardView() {
                   onSubmit={handleAddColumn}
                   className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4"
                 >
-                  <input
+                  <Input
                     type="text"
                     value={newColumnName}
                     onChange={(e) => setNewColumnName(e.target.value)}
@@ -299,27 +284,30 @@ export default function BoardView() {
                       }
                     }}
                     placeholder="Column name (Enter to save)"
-                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 mb-3"
+                    className="mb-3"
                     autoFocus
                   />
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       type="submit"
                       disabled={!newColumnName.trim()}
-                      className="flex-1 py-2.5 bg-primary-500 hover:bg-primary-400 text-white font-medium rounded-lg disabled:opacity-50 transition-colors cursor-pointer"
+                      variant="primary"
+                      size="md"
+                      className="flex-1"
                     >
                       Add
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => {
                         setShowAddColumn(false)
                         setNewColumnName('')
                       }}
-                      className="px-4 py-2.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors cursor-pointer"
+                      variant="ghost"
+                      size="md"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </form>
               ) : (
