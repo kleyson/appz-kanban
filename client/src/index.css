@@ -33,6 +33,30 @@ body {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+/* Touch-friendly scrolling */
+.custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Touch-friendly tap targets - minimum 44px for accessibility */
+@media (pointer: coarse) {
+  button,
+  [role='button'],
+  .cursor-pointer {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Larger touch targets for interactive elements */
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
 /* Due date warning animations */
 @keyframes pulse-overdue {
   0%,
@@ -87,6 +111,22 @@ body {
   bottom: 0;
   z-index: 9999;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  flex-direction: column;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fullscreen board horizontal scroll container */
+.fullscreen-mode > .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  scroll-snap-type: x proximity;
+}
+
+/* Fullscreen columns snap behavior */
+.fullscreen-mode .flex-shrink-0 {
+  scroll-snap-align: start;
 }
 
 /* Reduce motion for accessibility */

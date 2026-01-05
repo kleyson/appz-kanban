@@ -6,6 +6,7 @@ import {
   closestCorners,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -56,6 +57,12 @@ export default function BoardView() {
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -228,7 +235,7 @@ export default function BoardView() {
       </div>
 
       {/* Kanban Board */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden">
+      <div className="flex-1 overflow-x-auto overflow-y-hidden touch-pan-x">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -252,7 +259,16 @@ export default function BoardView() {
                     type="text"
                     value={newColumnName}
                     onChange={(e) => setNewColumnName(e.target.value)}
-                    placeholder="Column name"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newColumnName.trim()) {
+                        handleAddColumn(e)
+                      }
+                      if (e.key === 'Escape') {
+                        setShowAddColumn(false)
+                        setNewColumnName('')
+                      }
+                    }}
+                    placeholder="Column name (Enter to save)"
                     className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 mb-3"
                     autoFocus
                   />

@@ -157,7 +157,19 @@ export default function Column({ column, onCardClick }: ColumnProps) {
             <textarea
               value={newCardTitle}
               onChange={(e) => setNewCardTitle(e.target.value)}
-              placeholder="Enter card title..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  if (newCardTitle.trim()) {
+                    handleAddCard(e)
+                  }
+                }
+                if (e.key === 'Escape') {
+                  setShowAddCard(false)
+                  setNewCardTitle('')
+                }
+              }}
+              placeholder="Enter card title... (Enter to save, Shift+Enter for new line)"
               className="w-full px-3 py-2 bg-slate-900/50 border border-slate-600/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 resize-none"
               rows={2}
               autoFocus

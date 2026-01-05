@@ -3,6 +3,8 @@ import { useSettingsStore } from '../../stores/settingsStore'
 import { useBoard } from '../../api/hooks'
 import { useQueryClient } from '@tanstack/react-query'
 import KanbanCard from './KanbanCard'
+import CardModal from './CardModal'
+import type { Card } from '../../types'
 
 interface FullscreenBoardProps {
   boardId: number
@@ -14,6 +16,7 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
   const { data: board } = useBoard(boardId)
   const queryClient = useQueryClient()
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null)
 
   // Update clock every second
   useEffect(() => {
@@ -109,7 +112,7 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
       </div>
 
       {/* Board content */}
-      <div className="flex-1 overflow-x-auto p-8">
+      <div className="flex-1 overflow-x-auto p-8 touch-pan-x">
         <div className="flex gap-6 h-full">
           {board.columns.map((column) => (
             <div
@@ -127,10 +130,10 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
               </div>
 
               {/* Cards */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar touch-pan-y overscroll-contain">
                 {column.cards.map((card) => (
                   <div key={card.id} className="transform scale-105 origin-top">
-                    <KanbanCard card={card} />
+                    <KanbanCard card={card} onClick={() => setSelectedCard(card)} />
                   </div>
                 ))}
                 {column.cards.length === 0 && (
@@ -159,6 +162,17 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
         </svg>
         Auto-refresh every {settings.fullscreen.autoRefreshInterval}s
       </div>
+
+      {/* Card Modal */}
+      {selectedCard && board && (
+        <CardModal
+          card={selectedCard}
+          boardId={board.id}
+          labels={board.labels || []}
+          members={board.members || []}
+          onClose={() => setSelectedCard(null)}
+        />
+      )}
     </div>
   )
 }
