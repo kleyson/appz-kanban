@@ -29,6 +29,7 @@ function createCard(id: number, columnId: number, position: number): Card {
     color: null,
     assigneeId: null,
     subtasks: [],
+    comments: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }

@@ -13,6 +13,7 @@ interface CardMetadataSidebarProps {
   onPriorityChange: (value: Priority | '') => void
   onAssigneeChange: (value: number | '') => void
   onColorChange: (value: string) => void
+  onEnterEditMode: () => void
 }
 
 export default function CardMetadataSidebar({
@@ -26,6 +27,7 @@ export default function CardMetadataSidebar({
   onPriorityChange,
   onAssigneeChange,
   onColorChange,
+  onEnterEditMode,
 }: CardMetadataSidebarProps) {
   const [showMemberPicker, setShowMemberPicker] = useState(false)
   const colorPickerRef = useRef<HTMLInputElement>(null)
@@ -49,19 +51,25 @@ export default function CardMetadataSidebar({
             className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 [color-scheme:dark]"
           />
         ) : (
-          <p className="text-white">
+          <div
+            className="py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors"
+            onDoubleClick={onEnterEditMode}
+            title="Double-click to edit"
+          >
             {dueDate ? (
-              new Date(dueDate).toLocaleString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-              })
+              <span className="text-white">
+                {new Date(dueDate).toLocaleString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+              </span>
             ) : (
-              <span className="text-slate-500">Not set</span>
+              <span className="text-slate-500 italic">Not set</span>
             )}
-          </p>
+          </div>
         )}
       </div>
 
@@ -92,7 +100,11 @@ export default function CardMetadataSidebar({
             ))}
           </div>
         ) : (
-          <p>
+          <div
+            className="py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors"
+            onDoubleClick={onEnterEditMode}
+            title="Double-click to edit"
+          >
             {priority ? (
               <span
                 className={`px-2 py-1 rounded-md font-medium text-sm ${priorityConfig[priority].bg} ${priorityConfig[priority].text}`}
@@ -100,9 +112,9 @@ export default function CardMetadataSidebar({
                 {priorityConfig[priority].label}
               </span>
             ) : (
-              <span className="text-slate-500">Not set</span>
+              <span className="text-slate-500 italic">Not set</span>
             )}
-          </p>
+          </div>
         )}
       </div>
 
@@ -156,7 +168,11 @@ export default function CardMetadataSidebar({
             )}
           </div>
         ) : (
-          <div>
+          <div
+            className="py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors"
+            onDoubleClick={onEnterEditMode}
+            title="Double-click to edit"
+          >
             {assignee ? (
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
@@ -165,7 +181,7 @@ export default function CardMetadataSidebar({
                 <span className="text-white">{assignee.user?.displayName}</span>
               </div>
             ) : (
-              <span className="text-slate-500">Unassigned</span>
+              <span className="text-slate-500 italic">Unassigned</span>
             )}
           </div>
         )}
@@ -224,7 +240,13 @@ export default function CardMetadataSidebar({
             </div>
           </div>
         ) : (
-          <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: color }} />
+          <div
+            className="py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors inline-block"
+            onDoubleClick={onEnterEditMode}
+            title="Double-click to edit"
+          >
+            <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: color }} />
+          </div>
         )}
       </div>
     </div>

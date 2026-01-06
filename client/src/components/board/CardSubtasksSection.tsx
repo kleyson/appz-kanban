@@ -8,6 +8,7 @@ interface CardSubtasksSectionProps {
   onToggleSubtask: (id: string) => void
   onAddSubtask: (subtask: Subtask) => void
   onDeleteSubtask: (id: string) => void
+  onEnterEditMode: () => void
 }
 
 export default function CardSubtasksSection({
@@ -16,6 +17,7 @@ export default function CardSubtasksSection({
   onToggleSubtask,
   onAddSubtask,
   onDeleteSubtask,
+  onEnterEditMode,
 }: CardSubtasksSectionProps) {
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
   const {
@@ -66,7 +68,7 @@ export default function CardSubtasksSection({
           >
             <button
               onClick={() => onToggleSubtask(subtask.id)}
-              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors cursor-pointer ${
+              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0 ${
                 subtask.completed
                   ? 'bg-emerald-500 border-emerald-500'
                   : 'border-slate-500 hover:border-slate-400'
@@ -89,7 +91,9 @@ export default function CardSubtasksSection({
               )}
             </button>
             <span
-              className={`flex-1 text-sm ${subtask.completed ? 'text-slate-500 line-through' : 'text-white'}`}
+              className={`flex-1 text-sm ${subtask.completed ? 'text-slate-500 line-through' : 'text-white'} ${mode === 'view' ? 'cursor-pointer' : ''}`}
+              onDoubleClick={mode === 'view' ? onEnterEditMode : undefined}
+              title={mode === 'view' ? 'Double-click to edit' : undefined}
             >
               {subtask.title}
             </span>
@@ -111,7 +115,13 @@ export default function CardSubtasksSection({
           </div>
         ))}
         {subtasks.length === 0 && mode === 'view' && (
-          <p className="text-slate-500 text-sm">No subtasks</p>
+          <div
+            className="py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors"
+            onDoubleClick={onEnterEditMode}
+            title="Double-click to add subtasks"
+          >
+            <span className="text-slate-500 italic text-sm">No subtasks</span>
+          </div>
         )}
       </div>
 

@@ -38,8 +38,10 @@ You can try Appz Kanban without installing anything:
 
 ### Authentication & Security
 
-- 🔐 **User Authentication** - Secure user registration and login with JWT
+- 🔐 **JWT Authentication** - Secure user registration and login with access tokens (60 min expiry)
+- 🔄 **Refresh Tokens** - HTTP-only cookie-based refresh tokens (30 day expiry) for seamless session persistence
 - 🔒 **Protected Routes** - API endpoints protected with authentication middleware
+- 🛡️ **Error Boundaries** - Graceful error handling with user-friendly fallback UI
 
 ## Quick Start with Docker
 
@@ -194,23 +196,30 @@ For development or manual setup:
 appz-kanban/
 ├── client/                 # Frontend application
 │   ├── src/
-│   │   ├── api/           # API client and WebSocket
+│   │   ├── api/           # API client, WebSocket, and React Query hooks
 │   │   ├── components/    # React components
 │   │   │   ├── auth/     # Authentication pages
-│   │   │   ├── board/    # Board components
+│   │   │   ├── board/    # Board components (BoardView, Column, KanbanCard, CardModal)
 │   │   │   ├── layout/   # Layout components
-│   │   │   └── settings/ # Settings page
+│   │   │   ├── settings/ # Settings page sections
+│   │   │   └── ui/       # Reusable UI components (ErrorBoundary, ErrorFallback)
 │   │   ├── hooks/         # Custom React hooks
-│   │   ├── stores/        # Zustand stores
+│   │   │   ├── useEscapeKey.ts      # Escape key handler
+│   │   │   ├── useBoardDragDrop.ts  # Drag-and-drop logic
+│   │   │   ├── useColumnForm.ts     # Column editing state
+│   │   │   ├── useSettingsForm.ts   # Settings form state
+│   │   │   └── useFullscreen.ts     # Fullscreen mode
+│   │   ├── stores/        # Zustand stores (auth, board, settings)
 │   │   ├── types/         # TypeScript types
 │   │   └── utils/         # Utility functions
 │   └── package.json
 ├── server/                # Backend application
 │   ├── src/
+│   │   ├── __tests__/    # Test suites (API + integration tests)
 │   │   ├── controllers/   # API route handlers
 │   │   ├── db/           # Database connection and migrations
 │   │   ├── migrations/   # Database migration files
-│   │   ├── repositories/ # Data access layer
+│   │   ├── repositories/ # Data access layer (including RefreshTokenRepository)
 │   │   ├── services/     # Business logic
 │   │   ├── middleware/   # Authentication middleware
 │   │   └── types/         # TypeScript types
@@ -262,8 +271,11 @@ bun run db:migrate       # Run database migrations
 
 ### Authentication
 
+- `GET /api/auth/setup-status` - Check if initial setup is complete
 - `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
+- `POST /api/auth/login` - Login user (returns access token, sets refresh token cookie)
+- `POST /api/auth/refresh` - Refresh access token using refresh token cookie
+- `POST /api/auth/logout` - Logout user (clears refresh token)
 - `GET /api/auth/me` - Get current user (protected)
 
 ### Boards
@@ -300,10 +312,40 @@ bun run db:migrate       # Run database migrations
 
 - `GET /api/settings` - Get user settings
 - `PUT /api/settings` - Update user settings
+- `DELETE /api/settings` - Reset settings to defaults
+- `POST /api/settings/webhook/test` - Test webhook configuration
+
+### Invites (Admin only)
+
+- `GET /api/invites` - List all invite codes
+- `POST /api/invites` - Create a new invite code
+- `DELETE /api/invites/:id` - Revoke an invite code
 
 ### WebSocket
 
 - `ws://localhost:3000/ws` - WebSocket connection for real-time updates
+
+## Testing
+
+The project includes comprehensive test coverage with **253 tests** across client and server:
+
+### Client Tests (152 tests)
+
+- **Custom Hooks**: `useEscapeKey`, `useBoardDragDrop`, `useColumnForm`, `useSettingsForm`, `useFullscreen`
+- **Stores**: Auth, Board, and Settings store tests
+- **Utilities**: Date utilities, markdown rendering
+
+### Server Tests (101 tests)
+
+- **API Endpoint Tests**: Auth, Boards, Columns, Cards, Labels, Settings, Invites
+- **Integration Tests**: Database operations, authentication flow
+
+Run tests with:
+
+```bash
+bun run test           # Run all tests
+bun test               # Run tests in current package
+```
 
 ## License
 

@@ -130,6 +130,7 @@ export interface Card {
   color: string | null
   assigneeId: number | null
   subtasks: Subtask[]
+  comments: Comment[]
   createdAt: string
   updatedAt: string
   labels?: Label[]
@@ -171,6 +172,7 @@ export interface CreateCardRequest {
   assigneeId?: number
   labelIds?: number[]
   subtasks?: Subtask[]
+  comments?: Comment[]
 }
 
 export interface UpdateCardRequest {
@@ -182,6 +184,7 @@ export interface UpdateCardRequest {
   assigneeId?: number | null
   labelIds?: number[]
   subtasks?: Subtask[]
+  comments?: Comment[]
 }
 
 export interface MoveCardRequest {
@@ -207,6 +210,16 @@ export interface Subtask {
   id: string
   title: string
   completed: boolean
+}
+
+// Comment types
+export interface Comment {
+  id: string
+  content: string
+  authorId: number
+  authorName: string
+  createdAt: string
+  updatedAt?: string
 }
 
 // Settings types

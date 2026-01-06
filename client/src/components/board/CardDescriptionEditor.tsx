@@ -7,12 +7,14 @@ interface CardDescriptionEditorProps {
   description: string
   mode: 'view' | 'edit'
   onChange: (value: string) => void
+  onEnterEditMode: () => void
 }
 
 export default function CardDescriptionEditor({
   description,
   mode,
   onChange,
+  onEnterEditMode,
 }: CardDescriptionEditorProps) {
   const [descriptionTab, setDescriptionTab] = useState<'write' | 'preview'>('write')
   const [emojiSearch, setEmojiSearch] = useState<EmojiSearchState | null>(null)
@@ -103,7 +105,11 @@ export default function CardDescriptionEditor({
           )}
         </div>
       ) : (
-        <div className="p-4 bg-slate-900/30 border border-slate-700/30 rounded-xl min-h-[80px]">
+        <div
+          className="p-4 bg-slate-900/30 border border-slate-700/30 rounded-xl min-h-[80px] hover:bg-slate-800/30 cursor-pointer transition-colors"
+          onDoubleClick={onEnterEditMode}
+          title="Double-click to edit"
+        >
           <MarkdownRenderer content={description} />
         </div>
       )}

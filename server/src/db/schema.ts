@@ -115,6 +115,7 @@ export const cards = sqliteTable(
     color: text('color'),
     assigneeId: integer('assignee_id').references(() => users.id, { onDelete: 'set null' }),
     subtasks: text('subtasks').default('[]'),
+    comments: text('comments').default('[]'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },

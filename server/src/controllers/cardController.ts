@@ -43,6 +43,18 @@ export const cardController = new Elysia()
             })
           )
         ),
+        comments: t.Optional(
+          t.Array(
+            t.Object({
+              id: t.String(),
+              content: t.String(),
+              authorId: t.Number(),
+              authorName: t.String(),
+              createdAt: t.String(),
+              updatedAt: t.Optional(t.String()),
+            })
+          )
+        ),
       }),
     }
   )
@@ -85,6 +97,18 @@ export const cardController = new Elysia()
               id: t.String(),
               title: t.String(),
               completed: t.Boolean(),
+            })
+          )
+        ),
+        comments: t.Optional(
+          t.Array(
+            t.Object({
+              id: t.String(),
+              content: t.String(),
+              authorId: t.Number(),
+              authorName: t.String(),
+              createdAt: t.String(),
+              updatedAt: t.Optional(t.String()),
             })
           )
         ),

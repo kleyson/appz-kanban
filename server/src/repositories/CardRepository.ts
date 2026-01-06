@@ -1,7 +1,7 @@
 import { eq, asc, sql, and, gt, gte, lt, lte } from 'drizzle-orm'
 import { db, rawDb } from '../db/connection'
 import { cards, cardLabels, labels, users } from '../db/schema'
-import type { Card, Label, UserPublic, Priority, Subtask } from '../types'
+import type { Card, Label, UserPublic, Priority, Subtask, Comment } from '../types'
 import type { SQLQueryBindings } from 'bun:sqlite'
 
 export class CardRepository {
@@ -9,6 +9,15 @@ export class CardRepository {
     if (!subtasksJson) return []
     try {
       return JSON.parse(subtasksJson)
+    } catch {
+      return []
+    }
+  }
+
+  private parseComments(commentsJson: string | null): Comment[] {
+    if (!commentsJson) return []
+    try {
+      return JSON.parse(commentsJson)
     } catch {
       return []
     }
@@ -26,6 +35,7 @@ export class CardRepository {
       color: row.color,
       assigneeId: row.assigneeId,
       subtasks: this.parseSubtasks(row.subtasks),
+      comments: this.parseComments(row.comments),
       createdAt: row.createdAt!,
       updatedAt: row.updatedAt!,
     }
@@ -100,6 +110,7 @@ export class CardRepository {
       assigneeId?: number
       labelIds?: number[]
       subtasks?: Subtask[]
+      comments?: Comment[]
     }
   ): Card {
     const maxPos = db
@@ -110,6 +121,7 @@ export class CardRepository {
 
     const position = (maxPos?.maxPos ?? -1) + 1
     const subtasksJson = data.subtasks ? JSON.stringify(data.subtasks) : '[]'
+    const commentsJson = data.comments ? JSON.stringify(data.comments) : '[]'
 
     const result = db
       .insert(cards)
@@ -123,6 +135,7 @@ export class CardRepository {
         color: data.color ?? null,
         assigneeId: data.assigneeId ?? null,
         subtasks: subtasksJson,
+        comments: commentsJson,
       })
       .returning()
       .get()
@@ -147,6 +160,7 @@ export class CardRepository {
       assigneeId?: number | null
       labelIds?: number[]
       subtasks?: Subtask[]
+      comments?: Comment[]
     }
   ): Card | null {
     // Build SQL dynamically for update
@@ -180,6 +194,10 @@ export class CardRepository {
     if (data.subtasks !== undefined) {
       sets.push('subtasks = ?')
       values.push(JSON.stringify(data.subtasks))
+    }
+    if (data.comments !== undefined) {
+      sets.push('comments = ?')
+      values.push(JSON.stringify(data.comments))
     }
 
     if (sets.length > 0) {

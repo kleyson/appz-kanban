@@ -1,0 +1,1 @@
+ALTER TABLE `cards` ADD `comments` text DEFAULT '[]';

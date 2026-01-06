@@ -5,6 +5,7 @@ import {
   getWarningClasses,
   getWarningBackground,
   formatRelativeDate,
+  formatRelativeTime,
   getDefaultDueDate,
   formatDateForInput,
   formatDateTime,
@@ -217,5 +218,49 @@ describe('formatDateTime', () => {
     const result = formatDateTime('2024-03-15T14:30:00Z')
     expect(result).toContain('Mar')
     expect(result).toContain('15')
+  })
+})
+
+describe('formatRelativeTime', () => {
+  it('should return "just now" for very recent dates', () => {
+    const now = new Date()
+    now.setSeconds(now.getSeconds() - 30)
+    const result = formatRelativeTime(now.toISOString())
+    expect(result).toBe('just now')
+  })
+
+  it('should return minutes ago for dates within an hour', () => {
+    const date = new Date()
+    date.setMinutes(date.getMinutes() - 15)
+    const result = formatRelativeTime(date.toISOString())
+    expect(result).toBe('15m ago')
+  })
+
+  it('should return hours ago for dates within a day', () => {
+    const date = new Date()
+    date.setHours(date.getHours() - 5)
+    const result = formatRelativeTime(date.toISOString())
+    expect(result).toBe('5h ago')
+  })
+
+  it('should return days ago for dates within a week', () => {
+    const date = new Date()
+    date.setDate(date.getDate() - 3)
+    const result = formatRelativeTime(date.toISOString())
+    expect(result).toBe('3d ago')
+  })
+
+  it('should return formatted date for dates older than a week', () => {
+    const date = new Date()
+    date.setDate(date.getDate() - 10)
+    const result = formatRelativeTime(date.toISOString())
+    expect(result).toContain(date.toLocaleDateString('en-US', { month: 'short' }).split(' ')[0])
+  })
+
+  it('should include year for dates from a different year', () => {
+    const date = new Date()
+    date.setFullYear(date.getFullYear() - 1)
+    const result = formatRelativeTime(date.toISOString())
+    expect(result).toMatch(/\d{4}/)
   })
 })

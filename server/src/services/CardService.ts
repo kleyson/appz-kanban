@@ -3,7 +3,7 @@ import { columnRepository } from '../repositories/ColumnRepository'
 import { boardRepository } from '../repositories/BoardRepository'
 import { settingsRepository } from '../repositories/SettingsRepository'
 import { webhookService } from './WebhookService'
-import type { Card, Priority, Subtask } from '../types'
+import type { Card, Priority, Subtask, Comment } from '../types'
 
 export class CardService {
   createCard(
@@ -18,6 +18,7 @@ export class CardService {
       assigneeId?: number
       labelIds?: number[]
       subtasks?: Subtask[]
+      comments?: Comment[]
     }
   ): Card {
     // Check if user has access to the column's board
@@ -59,6 +60,7 @@ export class CardService {
       assigneeId?: number | null
       labelIds?: number[]
       subtasks?: Subtask[]
+      comments?: Comment[]
     }
   ): Card | null {
     // Check if user has access

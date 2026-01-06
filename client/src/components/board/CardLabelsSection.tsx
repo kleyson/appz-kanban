@@ -10,6 +10,7 @@ interface CardLabelsSectionProps {
   onToggleLabel: (labelId: number) => void
   onAddPendingLabel: (label: PendingLabel) => void
   onRemovePendingLabel: (name: string) => void
+  onEnterEditMode: () => void
 }
 
 export default function CardLabelsSection({
@@ -20,6 +21,7 @@ export default function CardLabelsSection({
   onToggleLabel,
   onAddPendingLabel,
   onRemovePendingLabel,
+  onEnterEditMode,
 }: CardLabelsSectionProps) {
   const [labelSearch, setLabelSearch] = useState('')
   const [showLabelPicker, setShowLabelPicker] = useState(false)
@@ -43,37 +45,63 @@ export default function CardLabelsSection({
   return (
     <div>
       <label className="block text-sm font-medium text-slate-400 mb-2">Labels</label>
-      {/* Selected labels */}
-      <div className="flex flex-wrap gap-2 mb-2">
-        {selectedLabels.map((labelId) => {
-          const label = labels.find((l) => l.id === labelId)
-          if (!label) return null
-          return (
-            <span
-              key={label.id}
-              className={`px-3 py-1 rounded-full text-sm font-medium text-white ${mode === 'edit' ? 'cursor-pointer hover:opacity-80' : ''} transition-opacity`}
-              style={{ backgroundColor: label.color }}
-              onClick={() => mode === 'edit' && onToggleLabel(label.id)}
-            >
-              {label.name} {mode === 'edit' && '×'}
-            </span>
-          )
-        })}
-        {/* Pending labels (to be created) */}
-        {pendingLabels.map((pending) => (
-          <span
-            key={pending.name}
-            className="px-3 py-1 rounded-full text-sm font-medium text-white cursor-pointer hover:opacity-80 transition-opacity border-2 border-dashed border-white/30"
-            style={{ backgroundColor: pending.color }}
-            onClick={() => mode === 'edit' && onRemovePendingLabel(pending.name)}
-          >
-            {pending.name} ×
-          </span>
-        ))}
-        {selectedLabels.length === 0 && pendingLabels.length === 0 && mode === 'view' && (
-          <span className="text-slate-500 text-sm">No labels</span>
-        )}
-      </div>
+      {mode === 'edit' ? (
+        <>
+          {/* Selected labels - Edit mode */}
+          <div className="flex flex-wrap gap-2 mb-2">
+            {selectedLabels.map((labelId) => {
+              const label = labels.find((l) => l.id === labelId)
+              if (!label) return null
+              return (
+                <span
+                  key={label.id}
+                  className="px-3 py-1 rounded-full text-sm font-medium text-white cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: label.color }}
+                  onClick={() => onToggleLabel(label.id)}
+                >
+                  {label.name} ×
+                </span>
+              )
+            })}
+            {/* Pending labels (to be created) */}
+            {pendingLabels.map((pending) => (
+              <span
+                key={pending.name}
+                className="px-3 py-1 rounded-full text-sm font-medium text-white cursor-pointer hover:opacity-80 transition-opacity border-2 border-dashed border-white/30"
+                style={{ backgroundColor: pending.color }}
+                onClick={() => onRemovePendingLabel(pending.name)}
+              >
+                {pending.name} ×
+              </span>
+            ))}
+          </div>
+        </>
+      ) : (
+        /* View mode - double-click to edit */
+        <div
+          className="flex flex-wrap gap-2 py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors -mx-3"
+          onDoubleClick={onEnterEditMode}
+          title="Double-click to edit"
+        >
+          {selectedLabels.length > 0 ? (
+            selectedLabels.map((labelId) => {
+              const label = labels.find((l) => l.id === labelId)
+              if (!label) return null
+              return (
+                <span
+                  key={label.id}
+                  className="px-3 py-1 rounded-full text-sm font-medium text-white"
+                  style={{ backgroundColor: label.color }}
+                >
+                  {label.name}
+                </span>
+              )
+            })
+          ) : (
+            <span className="text-slate-500 italic text-sm">No labels</span>
+          )}
+        </div>
+      )}
 
       {/* Label input (edit mode) */}
       {mode === 'edit' && (

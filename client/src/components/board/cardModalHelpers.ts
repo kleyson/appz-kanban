@@ -1,4 +1,4 @@
-import type { Priority, Subtask } from '../../types'
+import type { Priority, Subtask, Comment } from '../../types'
 
 /**
  * Priority options for the card modal
@@ -149,4 +149,17 @@ export function calculateProgress(subtasks: Subtask[]): {
   const completed = subtasks.filter((s) => s.completed).length
   const percent = total > 0 ? (completed / total) * 100 : 0
   return { completed, total, percent }
+}
+
+/**
+ * Create a new comment
+ */
+export function createComment(content: string, authorId: number, authorName: string): Comment {
+  return {
+    id: crypto.randomUUID(),
+    content: content.trim(),
+    authorId,
+    authorName,
+    createdAt: new Date().toISOString(),
+  }
 }
