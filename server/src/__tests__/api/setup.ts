@@ -157,7 +157,7 @@ export function clearTestData() {
 export function setupApiTests() {
   beforeAll(async () => {
     if (!migrationsRun) {
-      await runMigrations(true) // silent mode
+      await runMigrations()
       migrationsRun = true
     }
     clearTestData()

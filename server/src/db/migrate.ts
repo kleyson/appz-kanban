@@ -1,21 +1,6 @@
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
 import { resolve } from 'path'
-import { existsSync, readFileSync } from 'fs'
-import { db, rawDb } from './connection'
-
-interface MigrationJournalEntry {
-  idx: number
-  version: string
-  when: number
-  tag: string
-  breakpoints: boolean
-}
-
-interface MigrationJournal {
-  version: string
-  dialect: string
-  entries: MigrationJournalEntry[]
-}
+import { db } from './connection'
 
 /**
  * Get the migrations folder path
@@ -24,98 +9,26 @@ interface MigrationJournal {
 function getMigrationsFolder(): string {
   const currentDir = import.meta.dir
 
-  console.log(`📂 Migration resolver - import.meta.dir: ${currentDir}`)
-
   // Check if we're running from dist/ (bundled) or src/db/ (development)
   if (currentDir.includes('/dist')) {
     // Bundled: dist/index.js -> ../drizzle
-    const path = resolve(currentDir, '../drizzle')
-    console.log(`📂 Production mode - migrations path: ${path}`)
-    return path
+    return resolve(currentDir, '../drizzle')
   }
 
   // Development: src/db/migrate.ts -> ../../drizzle
-  const path = resolve(currentDir, '../../drizzle')
-  console.log(`📂 Development mode - migrations path: ${path}`)
-  return path
-}
-
-/**
- * Get count of already applied migrations from the database
- */
-function getAppliedMigrationsCount(): number {
-  try {
-    // Check if migrations table exists
-    const tableExists = rawDb
-      .query("SELECT name FROM sqlite_master WHERE type='table' AND name='__drizzle_migrations'")
-      .get()
-
-    if (tableExists) {
-      const result = rawDb.query('SELECT COUNT(*) as count FROM __drizzle_migrations').get() as {
-        count: number
-      }
-      return result.count
-    }
-  } catch {
-    // Table doesn't exist yet, no migrations applied
-  }
-
-  return 0
+  return resolve(currentDir, '../../drizzle')
 }
 
 /**
  * Run all pending database migrations using Drizzle
- * @param silent - If true, suppresses console output
  */
-export async function runMigrations(silent = false): Promise<void> {
-  const log = silent ? () => {} : console.log
-
+export async function runMigrations(): Promise<void> {
   const migrationsFolder = getMigrationsFolder()
+  console.log(`📂 Running migrations from: ${migrationsFolder}`)
 
-  // Verify migrations folder exists
-  if (!existsSync(migrationsFolder)) {
-    const error = new Error(
-      `Migrations folder not found at: ${migrationsFolder}. ` +
-        `Ensure the drizzle folder is properly copied in the build.`
-    )
-    console.error('❌', error.message)
-    throw error
-  }
+  migrate(db, { migrationsFolder })
 
-  // Read migration journal
-  const journalPath = resolve(migrationsFolder, 'meta/_journal.json')
-  if (!existsSync(journalPath)) {
-    const error = new Error(`Migration journal not found at: ${journalPath}`)
-    console.error('❌', error.message)
-    throw error
-  }
-
-  const journal: MigrationJournal = JSON.parse(readFileSync(journalPath, 'utf-8'))
-  const appliedCount = getAppliedMigrationsCount()
-  const totalMigrations = journal.entries.length
-  const pendingCount = totalMigrations - appliedCount
-
-  if (pendingCount <= 0) {
-    log('📦 Database schema is up to date')
-    return
-  }
-
-  // Get the pending migrations (those after the applied count)
-  const pendingMigrations = journal.entries.slice(appliedCount)
-
-  log(`📦 Running ${pendingCount} pending migration(s)...`)
-
-  for (const migration of pendingMigrations) {
-    log(`   ↳ Applying: ${migration.tag}`)
-  }
-
-  try {
-    migrate(db, { migrationsFolder })
-    log('📦 Migrations complete!')
-  } catch (error) {
-    console.error('❌ Migration failed:', error)
-    throw error
-  }
+  console.log('📦 Migrations complete!')
 }
 
 // Run migrations directly if this file is executed as a script
