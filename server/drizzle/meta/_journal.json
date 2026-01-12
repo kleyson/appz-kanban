@@ -33,14 +33,14 @@
     {
       "idx": 4,
       "version": "6",
-      "when": 1736632800000,
+      "when": 1767800000000,
       "tag": "0004_add_column_is_done",
       "breakpoints": true
     },
     {
       "idx": 5,
       "version": "6",
-      "when": 1736632800001,
+      "when": 1767800000001,
       "tag": "0005_add_card_archived_at",
       "breakpoints": true
     }
