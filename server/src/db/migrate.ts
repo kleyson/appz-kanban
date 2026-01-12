@@ -1,5 +1,6 @@
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator'
 import { resolve } from 'path'
+import { existsSync, readdirSync } from 'fs'
 import { db } from './connection'
 
 /**
@@ -25,6 +26,24 @@ function getMigrationsFolder(): string {
 export async function runMigrations(): Promise<void> {
   const migrationsFolder = getMigrationsFolder()
   console.log(`📂 Running migrations from: ${migrationsFolder}`)
+
+  // Debug: check folder exists and list contents
+  if (!existsSync(migrationsFolder)) {
+    console.error(`❌ Migrations folder does not exist: ${migrationsFolder}`)
+    throw new Error(`Migrations folder not found: ${migrationsFolder}`)
+  }
+
+  const files = readdirSync(migrationsFolder)
+  console.log(`📂 Migration files found: ${files.filter((f) => f.endsWith('.sql')).join(', ')}`)
+
+  const metaFolder = resolve(migrationsFolder, 'meta')
+  if (!existsSync(metaFolder)) {
+    console.error(`❌ Meta folder does not exist: ${metaFolder}`)
+    throw new Error(`Meta folder not found: ${metaFolder}`)
+  }
+
+  const metaFiles = readdirSync(metaFolder)
+  console.log(`📂 Meta files found: ${metaFiles.join(', ')}`)
 
   migrate(db, { migrationsFolder })
 
