@@ -44,12 +44,31 @@ export default function CardMetadataSidebar({
       <div>
         <label className="block text-sm font-medium text-slate-400 mb-2">Due Date & Time</label>
         {mode === 'edit' ? (
-          <input
-            type="datetime-local"
-            value={dueDate}
-            onChange={(e) => onDueDateChange(e.target.value)}
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 [color-scheme:dark]"
-          />
+          <div className="flex gap-2">
+            <input
+              type="datetime-local"
+              value={dueDate}
+              onChange={(e) => onDueDateChange(e.target.value)}
+              className="flex-1 px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 [color-scheme:dark]"
+            />
+            {dueDate && (
+              <button
+                type="button"
+                onClick={() => onDueDateChange('')}
+                className="px-3 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-colors cursor-pointer"
+                title="Clear date"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         ) : (
           <div
             className="py-2 px-3 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors"

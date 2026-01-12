@@ -101,6 +101,7 @@ export interface Column {
   boardId: number
   name: string
   position: number
+  isDone: boolean
   createdAt: string
 }
 
@@ -131,6 +132,7 @@ export interface Card {
   assigneeId: number | null
   subtasks: Subtask[]
   comments: Comment[]
+  archivedAt: string | null
   createdAt: string
   updatedAt: string
   labels?: Label[]
@@ -249,6 +251,8 @@ export type WebhookEvent =
   | 'card.updated'
   | 'card.moved'
   | 'card.deleted'
+  | 'card.archived'
+  | 'card.unarchived'
   | 'column.created'
   | 'column.deleted'
   | 'board.created'

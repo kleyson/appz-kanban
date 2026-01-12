@@ -29,6 +29,20 @@
       "when": 1767720643752,
       "tag": "0003_add_comments_to_cards",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1736632800000,
+      "tag": "0004_add_column_is_done",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1736632800001,
+      "tag": "0005_add_card_archived_at",
+      "breakpoints": true
     }
   ]
 }

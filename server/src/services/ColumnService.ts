@@ -21,7 +21,11 @@ export class ColumnService {
     return column
   }
 
-  updateColumn(columnId: number, userId: number, data: { name?: string }): Column | null {
+  updateColumn(
+    columnId: number,
+    userId: number,
+    data: { name?: string; isDone?: boolean }
+  ): Column | null {
     const column = columnRepository.findById(columnId)
     if (!column) return null
 

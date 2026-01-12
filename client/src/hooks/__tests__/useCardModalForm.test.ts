@@ -17,6 +17,11 @@ mock.module('../../api/hooks', () => ({
   }),
   useDeleteCard: () => ({
     mutateAsync: mockDeleteCardMutateAsync,
+    isPending: false,
+  }),
+  useArchiveCard: () => ({
+    mutateAsync: mock(() => Promise.resolve()),
+    isPending: false,
   }),
   useCreateLabel: () => ({
     mutateAsync: mockCreateLabelMutateAsync,
@@ -38,6 +43,7 @@ function createTestCard(overrides: Partial<Card> = {}): Card {
     labels: [{ id: 1, name: 'Bug', color: '#ef4444', boardId: 1 }],
     subtasks: [{ id: 'st-1', title: 'Subtask 1', completed: false }],
     comments: [],
+    archivedAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     ...overrides,

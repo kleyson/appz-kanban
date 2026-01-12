@@ -261,6 +261,43 @@ export function useDeleteCard() {
   })
 }
 
+export function useArchiveCard() {
+  const queryClient = useQueryClient()
+  const removeCard = useBoardStore((state) => state.removeCard)
+
+  return useMutation({
+    mutationFn: (cardId: number) => api.put<Card>(`/cards/${cardId}/archive`),
+    onSuccess: (card) => {
+      removeCard(card.id)
+      queryClient.invalidateQueries({ queryKey: ['board'] })
+      queryClient.invalidateQueries({ queryKey: ['archivedCards'] })
+    },
+  })
+}
+
+export function useUnarchiveCard() {
+  const queryClient = useQueryClient()
+  const addCard = useBoardStore((state) => state.addCard)
+
+  return useMutation({
+    mutationFn: ({ cardId, columnId }: { cardId: number; columnId: number }) =>
+      api.put<Card>(`/cards/${cardId}/unarchive`, { columnId }),
+    onSuccess: (card) => {
+      addCard(card)
+      queryClient.invalidateQueries({ queryKey: ['board'] })
+      queryClient.invalidateQueries({ queryKey: ['archivedCards'] })
+    },
+  })
+}
+
+export function useArchivedCards(boardId: number) {
+  return useQuery({
+    queryKey: ['archivedCards', boardId],
+    queryFn: () => api.get<Card[]>(`/boards/${boardId}/cards/archived`),
+    enabled: !!boardId,
+  })
+}
+
 // Label hooks
 export function useLabels(boardId: number) {
   return useQuery({

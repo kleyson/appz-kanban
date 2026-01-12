@@ -89,6 +89,7 @@ function runMigrations(db: Database) {
       board_id INTEGER NOT NULL,
       name TEXT NOT NULL,
       position INTEGER NOT NULL,
+      is_done INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
     )
@@ -121,6 +122,8 @@ function runMigrations(db: Database) {
       color TEXT DEFAULT '#0ea5e9',
       assignee_id INTEGER,
       subtasks TEXT DEFAULT '[]',
+      comments TEXT DEFAULT '[]',
+      archived_at TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (column_id) REFERENCES columns(id) ON DELETE CASCADE,

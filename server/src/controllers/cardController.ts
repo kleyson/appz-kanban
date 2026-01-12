@@ -182,3 +182,73 @@ export const cardController = new Elysia()
       }),
     }
   )
+  .put(
+    '/cards/:id/archive',
+    ({ params, user, set }) => {
+      try {
+        const card = cardService.archiveCard(parseInt(params.id), user!.id)
+        if (!card) {
+          set.status = 404
+          return { error: 'Card not found' }
+        }
+        const boardId = columnService.getBoardId(card.columnId)
+        if (boardId) {
+          wsService.cardDeleted(boardId, card.id) // Remove from view
+        }
+        return card
+      } catch (error) {
+        set.status = 403
+        return { error: error instanceof Error ? error.message : 'Archive failed' }
+      }
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+    }
+  )
+  .put(
+    '/cards/:id/unarchive',
+    ({ params, body, user, set }) => {
+      try {
+        const card = cardService.unarchiveCard(parseInt(params.id), user!.id, body.columnId)
+        if (!card) {
+          set.status = 404
+          return { error: 'Card not found' }
+        }
+        const boardId = columnService.getBoardId(card.columnId)
+        if (boardId) {
+          wsService.cardCreated(boardId, card) // Add back to view
+        }
+        return card
+      } catch (error) {
+        set.status = 403
+        return { error: error instanceof Error ? error.message : 'Unarchive failed' }
+      }
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      body: t.Object({
+        columnId: t.Number(),
+      }),
+    }
+  )
+  .get(
+    '/boards/:id/cards/archived',
+    ({ params, user, set }) => {
+      try {
+        const cards = cardService.getArchivedCards(parseInt(params.id), user!.id)
+        return cards
+      } catch (error) {
+        set.status = 403
+        return { error: error instanceof Error ? error.message : 'Access denied' }
+      }
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+    }
+  )

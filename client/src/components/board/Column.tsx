@@ -28,6 +28,7 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
     showMenu,
     toggleMenu,
     closeMenu,
+    handleToggleDone,
     handleDelete,
   } = useColumnForm({ column })
 
@@ -94,12 +95,34 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
               autoFocus
             />
           ) : (
-            <h3
-              onClick={startEditing}
-              className="font-semibold text-white cursor-pointer hover:text-primary-300 transition-colors truncate"
-            >
-              {column.name}
-            </h3>
+            <div className="flex items-center gap-2 min-w-0">
+              {column.isDone && (
+                <span
+                  className="flex-shrink-0 w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center"
+                  title="Done column - time stops counting"
+                >
+                  <svg
+                    className="w-3 h-3 text-emerald-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </span>
+              )}
+              <h3
+                onClick={startEditing}
+                className="font-semibold text-white cursor-pointer hover:text-primary-300 transition-colors truncate"
+              >
+                {column.name}
+              </h3>
+            </div>
           )}
         </div>
 
@@ -124,7 +147,7 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={closeMenu} />
-                <div className="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20 py-1 min-w-[140px]">
+                <div className="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20 py-1 min-w-[160px]">
                   <button
                     onClick={() => {
                       startEditing()
@@ -133,6 +156,49 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
                     className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-700/50 transition-colors cursor-pointer"
                   >
                     Rename
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleToggleDone()
+                      closeMenu()
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-700/50 transition-colors cursor-pointer flex items-center gap-2"
+                  >
+                    {column.isDone ? (
+                      <>
+                        <svg
+                          className="w-4 h-4 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        Unmark as Done
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-4 h-4 text-emerald-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        Mark as Done
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={handleDelete}
@@ -157,7 +223,12 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
           strategy={verticalListSortingStrategy}
         >
           {column.cards.map((card) => (
-            <KanbanCard key={card.id} card={card} onClick={() => onCardClick(card)} />
+            <KanbanCard
+              key={card.id}
+              card={card}
+              isDoneColumn={column.isDone}
+              onClick={() => onCardClick(card)}
+            />
           ))}
         </SortableContext>
 

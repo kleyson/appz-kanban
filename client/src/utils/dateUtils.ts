@@ -155,9 +155,15 @@ export function daysSince(dateString: string): number {
 
 /**
  * Get the rot level for a card based on how long it's been unchanged
+ * Cards in "done" columns don't rot (isDoneColumn = true)
  */
-export function getRotLevel(updatedAt: string, settings: CardRottingSettings): RotLevel {
+export function getRotLevel(
+  updatedAt: string,
+  settings: CardRottingSettings,
+  isDoneColumn: boolean = false
+): RotLevel {
   if (!settings.enabled) return 'none'
+  if (isDoneColumn) return 'none'
 
   const days = daysSince(updatedAt)
 

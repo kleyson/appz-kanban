@@ -42,6 +42,7 @@ export default function CardModal({ card, boardId, labels, members, onClose }: C
     enterEditMode,
     cancelEdit,
     handleSave,
+    handleArchive,
     handleDelete,
     toggleLabel,
     addPendingLabel,
@@ -53,6 +54,7 @@ export default function CardModal({ card, boardId, labels, members, onClose }: C
     handleUpdateComment,
     handleDeleteComment,
     isSaving,
+    isArchiving,
   } = useCardModalForm({ card, boardId, onClose })
 
   const handleEscapeKey = useCallback(() => {
@@ -165,9 +167,14 @@ export default function CardModal({ card, boardId, labels, members, onClose }: C
       <ModalFooter>
         {mode === 'edit' ? (
           <>
-            <Button onClick={handleDelete} variant="danger" size="md">
-              Delete Card
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleArchive} isLoading={isArchiving} variant="ghost" size="md">
+                Archive
+              </Button>
+              <Button onClick={handleDelete} variant="danger" size="md">
+                Delete
+              </Button>
+            </div>
             <div className="flex gap-3">
               <Button onClick={cancelEdit} variant="ghost" size="md">
                 Cancel

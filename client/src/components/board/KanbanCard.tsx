@@ -23,10 +23,16 @@ import {
 interface KanbanCardProps {
   card: Card
   isDragging?: boolean
+  isDoneColumn?: boolean
   onClick?: () => void
 }
 
-export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProps) {
+export default function KanbanCard({
+  card,
+  isDragging,
+  isDoneColumn = false,
+  onClick,
+}: KanbanCardProps) {
   const { settings } = useSettingsStore()
   const {
     attributes,
@@ -58,8 +64,8 @@ export default function KanbanCard({ card, isDragging, onClick }: KanbanCardProp
   const warningClasses = getWarningClasses(warningLevel)
   const warningBackground = getWarningBackground(warningLevel)
 
-  // Get rot level for stale cards
-  const rotLevel = getRotLevel(card.updatedAt, settings.cardRotting)
+  // Get rot level for stale cards (cards in done columns don't rot)
+  const rotLevel = getRotLevel(card.updatedAt, settings.cardRotting, isDoneColumn)
   const rotClasses = getRotClasses(rotLevel)
   const rotOverlay = getRotOverlay(rotLevel)
 

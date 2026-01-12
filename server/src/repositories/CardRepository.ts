@@ -1,4 +1,4 @@
-import { eq, asc, sql, and, gt, gte, lt, lte } from 'drizzle-orm'
+import { eq, asc, sql, and, gt, gte, lt, lte, isNull, isNotNull } from 'drizzle-orm'
 import { db, rawDb } from '../db/connection'
 import { cards, cardLabels, labels, users } from '../db/schema'
 import type { Card, Label, UserPublic, Priority, Subtask, Comment } from '../types'
@@ -36,6 +36,7 @@ export class CardRepository {
       assigneeId: row.assigneeId,
       subtasks: this.parseSubtasks(row.subtasks),
       comments: this.parseComments(row.comments),
+      archivedAt: row.archivedAt,
       createdAt: row.createdAt!,
       updatedAt: row.updatedAt!,
     }
@@ -52,12 +53,35 @@ export class CardRepository {
     return card
   }
 
-  findByColumnId(columnId: number): Card[] {
+  findByColumnId(columnId: number, includeArchived: boolean = false): Card[] {
+    const whereConditions = includeArchived
+      ? eq(cards.columnId, columnId)
+      : and(eq(cards.columnId, columnId), isNull(cards.archivedAt))
+
+    const rows = db.select().from(cards).where(whereConditions).orderBy(asc(cards.position)).all()
+
+    return rows.map((row) => {
+      const card = this.toCard(row)
+      card.labels = this.getLabels(card.id)
+      card.assignee = this.getAssignee(card.assigneeId)
+      return card
+    })
+  }
+
+  findArchivedByBoardId(boardId: number, columnIds: number[]): Card[] {
+    if (columnIds.length === 0) return []
+
+    // Find all archived cards in the given columns
     const rows = db
       .select()
       .from(cards)
-      .where(eq(cards.columnId, columnId))
-      .orderBy(asc(cards.position))
+      .where(
+        and(
+          isNotNull(cards.archivedAt),
+          sql`${cards.columnId} IN (${sql.raw(columnIds.join(','))})`
+        )
+      )
+      .orderBy(asc(cards.archivedAt))
       .all()
 
     return rows.map((row) => {
@@ -66,6 +90,32 @@ export class CardRepository {
       card.assignee = this.getAssignee(card.assigneeId)
       return card
     })
+  }
+
+  archive(id: number): Card | null {
+    const now = new Date().toISOString()
+    rawDb.run(`UPDATE cards SET archived_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, [
+      now,
+      id,
+    ])
+    return this.findById(id)
+  }
+
+  unarchive(id: number, toColumnId: number): Card | null {
+    // Get max position in target column
+    const maxPos = db
+      .select({ maxPos: sql<number>`COALESCE(MAX(${cards.position}), -1)` })
+      .from(cards)
+      .where(and(eq(cards.columnId, toColumnId), isNull(cards.archivedAt)))
+      .get()
+
+    const position = (maxPos?.maxPos ?? -1) + 1
+
+    rawDb.run(
+      `UPDATE cards SET archived_at = NULL, column_id = ?, position = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [toColumnId, position, id]
+    )
+    return this.findById(id)
   }
 
   private getLabels(cardId: number): Label[] {

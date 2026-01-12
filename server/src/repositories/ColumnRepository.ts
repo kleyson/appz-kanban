@@ -7,7 +7,7 @@ export class ColumnRepository {
   findById(id: number): Column | null {
     const row = db.select().from(columns).where(eq(columns.id, id)).get()
     if (!row) return null
-    return { ...row, createdAt: row.createdAt! }
+    return { ...row, isDone: row.isDone ?? false, createdAt: row.createdAt! }
   }
 
   findByBoardId(boardId: number): Column[] {
@@ -17,7 +17,7 @@ export class ColumnRepository {
       .where(eq(columns.boardId, boardId))
       .orderBy(asc(columns.position))
       .all()
-    return rows.map((row) => ({ ...row, createdAt: row.createdAt! }))
+    return rows.map((row) => ({ ...row, isDone: row.isDone ?? false, createdAt: row.createdAt! }))
   }
 
   create(boardId: number, name: string): Column {
@@ -30,17 +30,17 @@ export class ColumnRepository {
     const position = (maxPos?.maxPos ?? -1) + 1
     const result = db.insert(columns).values({ boardId, name, position }).returning().get()
 
-    return { ...result, createdAt: result.createdAt! }
+    return { ...result, isDone: result.isDone ?? false, createdAt: result.createdAt! }
   }
 
-  update(id: number, data: { name?: string }): Column | null {
+  update(id: number, data: { name?: string; isDone?: boolean }): Column | null {
     if (Object.keys(data).length === 0) {
       return this.findById(id)
     }
 
     const result = db.update(columns).set(data).where(eq(columns.id, id)).returning().get()
     if (!result) return null
-    return { ...result, createdAt: result.createdAt! }
+    return { ...result, isDone: result.isDone ?? false, createdAt: result.createdAt! }
   }
 
   delete(id: number): boolean {

@@ -77,6 +77,7 @@ export const columns = sqliteTable(
       .references(() => boards.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     position: integer('position').notNull().default(0),
+    isDone: integer('is_done', { mode: 'boolean' }).default(false),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
@@ -116,6 +117,7 @@ export const cards = sqliteTable(
     assigneeId: integer('assignee_id').references(() => users.id, { onDelete: 'set null' }),
     subtasks: text('subtasks').default('[]'),
     comments: text('comments').default('[]'),
+    archivedAt: text('archived_at'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },

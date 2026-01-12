@@ -14,6 +14,7 @@ const mockBoard: BoardWithDetails = {
       boardId: 1,
       name: 'To Do',
       position: 0,
+      isDone: false,
       createdAt: '2024-01-01T00:00:00Z',
       cards: [
         {
@@ -26,6 +27,7 @@ const mockBoard: BoardWithDetails = {
           priority: null,
           color: '#0ea5e9',
           assigneeId: null,
+          archivedAt: null,
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
           labels: [],
@@ -39,6 +41,7 @@ const mockBoard: BoardWithDetails = {
       boardId: 1,
       name: 'Done',
       position: 1,
+      isDone: false,
       createdAt: '2024-01-01T00:00:00Z',
       cards: [],
     },
@@ -74,6 +77,7 @@ describe('boardStore', () => {
       boardId: 1,
       name: 'In Progress',
       position: 2,
+      isDone: false,
       createdAt: '2024-01-01T00:00:00Z',
       cards: [],
     }
@@ -120,6 +124,7 @@ describe('boardStore', () => {
       priority: null,
       color: '#0ea5e9',
       assigneeId: null,
+      archivedAt: null,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
       labels: [],

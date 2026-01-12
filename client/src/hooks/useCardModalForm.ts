@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useUpdateCard, useDeleteCard, useCreateLabel } from '../api/hooks'
+import { useUpdateCard, useDeleteCard, useArchiveCard, useCreateLabel } from '../api/hooks'
 import type { Card, Priority, Subtask, Comment } from '../types'
 import {
   PendingLabel,
@@ -34,6 +34,7 @@ export function useCardModalForm({ card, boardId, onClose }: UseCardModalFormPro
   // API hooks
   const updateCard = useUpdateCard()
   const deleteCard = useDeleteCard()
+  const archiveCard = useArchiveCard()
   const createLabel = useCreateLabel(boardId)
 
   // Mode handlers
@@ -88,9 +89,15 @@ export function useCardModalForm({ card, boardId, onClose }: UseCardModalFormPro
     }
   }
 
+  // Archive handler
+  const handleArchive = async () => {
+    await archiveCard.mutateAsync(card.id)
+    onClose()
+  }
+
   // Delete handler
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this card?')) {
+    if (confirm('Are you sure you want to permanently delete this card? This cannot be undone.')) {
       await deleteCard.mutateAsync(card.id)
       onClose()
     }
@@ -187,6 +194,7 @@ export function useCardModalForm({ card, boardId, onClose }: UseCardModalFormPro
 
     // CRUD handlers
     handleSave,
+    handleArchive,
     handleDelete,
 
     // Label handlers
@@ -206,6 +214,7 @@ export function useCardModalForm({ card, boardId, onClose }: UseCardModalFormPro
 
     // Loading states
     isSaving: updateCard.isPending,
+    isArchiving: archiveCard.isPending,
     isDeleting: deleteCard.isPending,
   }
 }

@@ -28,6 +28,9 @@ interface UseColumnFormReturn {
   toggleMenu: () => void
   closeMenu: () => void
 
+  // Done toggle
+  handleToggleDone: () => Promise<void>
+
   // Delete
   handleDelete: () => Promise<void>
 
@@ -108,6 +111,11 @@ export function useColumnForm({ column }: UseColumnFormProps): UseColumnFormRetu
     setShowMenu(false)
   }, [])
 
+  // Done toggle handler
+  const handleToggleDone = useCallback(async () => {
+    await updateColumn.mutateAsync({ columnId: column.id, data: { isDone: !column.isDone } })
+  }, [column.id, column.isDone, updateColumn])
+
   // Delete handler
   const handleDelete = useCallback(async () => {
     if (confirm(`Delete "${column.name}" and all its cards?`)) {
@@ -137,6 +145,9 @@ export function useColumnForm({ column }: UseColumnFormProps): UseColumnFormRetu
     showMenu,
     toggleMenu,
     closeMenu,
+
+    // Done toggle
+    handleToggleDone,
 
     // Delete
     handleDelete,

@@ -22,12 +22,12 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
   return (
     <div
       className={`
-        text-sm text-slate-300 leading-relaxed
+        text-sm text-slate-300 leading-relaxed break-words
         [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-3 [&_h1]:mb-2
         [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-white [&_h2]:mt-3 [&_h2]:mb-2
         [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-2 [&_h3]:mb-1
         [&_p]:my-2
-        [&_a]:text-primary-400 [&_a]:underline
+        [&_a]:text-primary-400 [&_a]:underline [&_a]:break-all
         [&_strong]:text-white [&_strong]:font-semibold
         [&_em]:italic
         [&_code]:text-sky-300 [&_code]:bg-slate-700/50 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs

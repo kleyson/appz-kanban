@@ -38,6 +38,7 @@ function createColumn(id: number, name: string): ColumnWithCards {
     boardId: 1,
     name,
     position: 0,
+    isDone: false,
     createdAt: new Date().toISOString(),
     cards: [],
   }

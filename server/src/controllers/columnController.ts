@@ -51,6 +51,7 @@ export const columnController = new Elysia()
       }),
       body: t.Object({
         name: t.Optional(t.String({ minLength: 1 })),
+        isDone: t.Optional(t.Boolean()),
       }),
     }
   )

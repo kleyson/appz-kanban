@@ -25,6 +25,7 @@ import Column from './Column'
 import KanbanCard from './KanbanCard'
 import CardModal from './CardModal'
 import FullscreenBoard from './FullscreenBoard'
+import ArchivedCardsPanel from './ArchivedCardsPanel'
 import type { Card } from '../../types'
 
 export default function BoardView() {
@@ -49,6 +50,7 @@ export default function BoardView() {
   const [showAddColumn, setShowAddColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
   const [showFullscreen, setShowFullscreen] = useState(false)
+  const [showArchivedCards, setShowArchivedCards] = useState(false)
 
   const handleEnterFullscreen = () => {
     setShowFullscreen(true)
@@ -117,6 +119,22 @@ export default function BoardView() {
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
         <h1 className="text-xl font-bold text-white">{currentBoard.name}</h1>
         <div className="flex items-center gap-3">
+          {/* Archived cards button */}
+          <button
+            onClick={() => setShowArchivedCards(true)}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors cursor-pointer"
+            title="View archived cards"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+              />
+            </svg>
+          </button>
+
           {/* Fullscreen button */}
           <button
             onClick={handleEnterFullscreen}
@@ -253,6 +271,15 @@ export default function BoardView() {
           labels={currentBoard.labels}
           members={currentBoard.members}
           onClose={() => setSelectedCard(null)}
+        />
+      )}
+
+      {/* Archived Cards Panel */}
+      {showArchivedCards && (
+        <ArchivedCardsPanel
+          boardId={currentBoard.id}
+          columns={currentBoard.columns}
+          onClose={() => setShowArchivedCards(false)}
         />
       )}
     </div>

@@ -30,6 +30,7 @@ function createCard(id: number, columnId: number, position: number): Card {
     assigneeId: null,
     subtasks: [],
     comments: [],
+    archivedAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
@@ -41,6 +42,7 @@ function createColumn(id: number, cards: Card[]): ColumnWithCards {
     boardId: 1,
     name: `Column ${id}`,
     position: id - 1,
+    isDone: false,
     createdAt: new Date().toISOString(),
     cards,
   }

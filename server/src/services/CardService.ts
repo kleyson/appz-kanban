@@ -142,6 +142,73 @@ export class CardService {
 
     return card
   }
+
+  archiveCard(cardId: number, userId: number): Card | null {
+    // Check if user has access
+    const columnId = cardRepository.getColumnId(cardId)
+    if (!columnId) return null
+
+    const boardId = columnRepository.getBoardId(columnId)
+    if (!boardId || !boardRepository.isMember(boardId, userId)) {
+      throw new Error('Access denied')
+    }
+
+    const card = cardRepository.archive(cardId)
+
+    // Send webhook
+    if (card) {
+      webhookService.send(userId, 'card.archived', {
+        card,
+        boardId,
+        columnId,
+      })
+    }
+
+    return card
+  }
+
+  unarchiveCard(cardId: number, userId: number, toColumnId: number): Card | null {
+    // Check if user has access
+    const card = cardRepository.findById(cardId)
+    if (!card) return null
+
+    const boardId = columnRepository.getBoardId(card.columnId)
+    if (!boardId || !boardRepository.isMember(boardId, userId)) {
+      throw new Error('Access denied')
+    }
+
+    // Check if target column is in the same board
+    const targetBoardId = columnRepository.getBoardId(toColumnId)
+    if (targetBoardId !== boardId) {
+      throw new Error('Cannot unarchive card to a different board')
+    }
+
+    const unarchivedCard = cardRepository.unarchive(cardId, toColumnId)
+
+    // Send webhook
+    if (unarchivedCard) {
+      webhookService.send(userId, 'card.unarchived', {
+        card: unarchivedCard,
+        boardId,
+        toColumnId,
+      })
+    }
+
+    return unarchivedCard
+  }
+
+  getArchivedCards(boardId: number, userId: number): Card[] {
+    // Check if user has access
+    if (!boardRepository.isMember(boardId, userId)) {
+      throw new Error('Access denied')
+    }
+
+    // Get all column IDs for this board
+    const columns = columnRepository.findByBoardId(boardId)
+    const columnIds = columns.map((c) => c.id)
+
+    return cardRepository.findArchivedByBoardId(boardId, columnIds)
+  }
 }
 
 export const cardService = new CardService()
