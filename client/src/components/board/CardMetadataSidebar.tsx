@@ -39,26 +39,26 @@ export default function CardMetadataSidebar({
   }
 
   return (
-    <div className="lg:w-56 space-y-4 flex-shrink-0">
+    <div className="lg:w-64 space-y-4 flex-shrink-0">
       {/* Due date */}
       <div>
         <label className="block text-sm font-medium text-slate-400 mb-2">Due Date & Time</label>
         {mode === 'edit' ? (
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <input
               type="datetime-local"
               value={dueDate}
               onChange={(e) => onDueDateChange(e.target.value)}
-              className="flex-1 px-4 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 [color-scheme:dark]"
+              className="flex-1 min-w-0 px-2 py-2.5 bg-slate-900/50 border border-slate-600/50 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 [color-scheme:dark]"
             />
             {dueDate && (
               <button
                 type="button"
                 onClick={() => onDueDateChange('')}
-                className="px-3 py-3 bg-slate-900/50 border border-slate-600/50 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-colors cursor-pointer"
+                className="px-2 py-2.5 bg-slate-900/50 border border-slate-600/50 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-colors cursor-pointer flex-shrink-0"
                 title="Clear date"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

@@ -59,8 +59,8 @@ export default function KanbanCard({
     percent: progressPercent,
   } = calculateSubtaskProgress(subtasks)
 
-  // Get due date warning level
-  const warningLevel = getDueDateWarningLevel(card.dueDate, settings.dueDateWarnings)
+  // Get due date warning level (cards in done columns don't show warnings)
+  const warningLevel = getDueDateWarningLevel(card.dueDate, settings.dueDateWarnings, isDoneColumn)
   const warningClasses = getWarningClasses(warningLevel)
   const warningBackground = getWarningBackground(warningLevel)
 
@@ -199,7 +199,14 @@ export default function KanbanCard({
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>{formatRelativeDate(card.dueDate)}</span>
+              <span>
+                {isDoneColumn
+                  ? new Date(card.dueDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : formatRelativeDate(card.dueDate)}
+              </span>
             </div>
           )}
 

@@ -12,12 +12,15 @@ export function hoursUntilDue(dueDate: string): number {
 
 /**
  * Get the warning level for a due date based on settings
+ * Cards in "done" columns don't show warnings (isDoneColumn = true)
  */
 export function getDueDateWarningLevel(
   dueDate: string | null,
-  warnings: DueDateWarnings
+  warnings: DueDateWarnings,
+  isDoneColumn: boolean = false
 ): DueDateWarningLevel {
   if (!dueDate) return 'normal'
+  if (isDoneColumn) return 'normal'
 
   const hours = hoursUntilDue(dueDate)
 
