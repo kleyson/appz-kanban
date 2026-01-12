@@ -24,14 +24,20 @@ interface MigrationJournal {
 function getMigrationsFolder(): string {
   const currentDir = import.meta.dir
 
+  console.log(`📂 Migration resolver - import.meta.dir: ${currentDir}`)
+
   // Check if we're running from dist/ (bundled) or src/db/ (development)
   if (currentDir.includes('/dist')) {
     // Bundled: dist/index.js -> ../drizzle
-    return resolve(currentDir, '../drizzle')
+    const path = resolve(currentDir, '../drizzle')
+    console.log(`📂 Production mode - migrations path: ${path}`)
+    return path
   }
 
   // Development: src/db/migrate.ts -> ../../drizzle
-  return resolve(currentDir, '../../drizzle')
+  const path = resolve(currentDir, '../../drizzle')
+  console.log(`📂 Development mode - migrations path: ${path}`)
+  return path
 }
 
 /**
