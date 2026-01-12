@@ -51,6 +51,30 @@ export default function BoardView() {
   const [newColumnName, setNewColumnName] = useState('')
   const [showFullscreen, setShowFullscreen] = useState(false)
   const [showArchivedCards, setShowArchivedCards] = useState(false)
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<number>>(() => {
+    const stored = localStorage.getItem(`kanban-collapsed-columns-${parsedBoardId}`)
+    if (stored) {
+      try {
+        return new Set(JSON.parse(stored) as number[])
+      } catch {
+        return new Set()
+      }
+    }
+    return new Set()
+  })
+
+  const toggleColumnCollapse = (columnId: number) => {
+    setCollapsedColumns((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(columnId)) {
+        newSet.delete(columnId)
+      } else {
+        newSet.add(columnId)
+      }
+      localStorage.setItem(`kanban-collapsed-columns-${parsedBoardId}`, JSON.stringify([...newSet]))
+      return newSet
+    })
+  }
 
   const handleEnterFullscreen = () => {
     setShowFullscreen(true)
@@ -182,7 +206,13 @@ export default function BoardView() {
           <div className="flex gap-4 p-6 h-full min-w-max">
             <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
               {currentBoard.columns.map((column) => (
-                <Column key={column.id} column={column} onCardClick={setSelectedCard} />
+                <Column
+                  key={column.id}
+                  column={column}
+                  onCardClick={setSelectedCard}
+                  isCollapsed={collapsedColumns.has(column.id)}
+                  onToggleCollapse={() => toggleColumnCollapse(column.id)}
+                />
               ))}
             </SortableContext>
 

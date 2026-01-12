@@ -9,9 +9,17 @@ interface ColumnProps {
   column: ColumnWithCards
   onCardClick: (card: Card) => void
   isDragging?: boolean
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export default function Column({ column, onCardClick, isDragging: isDraggingProp }: ColumnProps) {
+export default function Column({
+  column,
+  onCardClick,
+  isDragging: isDraggingProp,
+  isCollapsed = false,
+  onToggleCollapse,
+}: ColumnProps) {
   const {
     isEditing,
     name,
@@ -53,6 +61,89 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // Collapsed view
+  if (isCollapsed) {
+    return (
+      <div
+        ref={setSortableNodeRef}
+        style={style}
+        className={`w-12 flex-shrink-0 flex flex-col bg-slate-800/40 backdrop-blur-sm border rounded-xl transition-all ${
+          isOver ? 'border-primary-500/50 bg-slate-800/60' : 'border-slate-700/50'
+        } ${isDragging || isDraggingProp ? 'shadow-2xl' : ''}`}
+      >
+        {/* Collapsed Header with drag handle */}
+        <div className="flex flex-col items-center py-3 border-b border-slate-700/30">
+          <button
+            {...attributes}
+            {...listeners}
+            className="p-1 text-slate-500 hover:text-slate-300 cursor-grab active:cursor-grabbing touch-none mb-2"
+            title="Drag to reorder"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 8h16M4 16h16"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={onToggleCollapse}
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors cursor-pointer"
+            title="Expand column"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Vertical title and count */}
+        <div
+          ref={setDroppableNodeRef}
+          className="flex-1 flex flex-col items-center py-4 cursor-pointer hover:bg-slate-700/30 transition-colors"
+          onClick={onToggleCollapse}
+        >
+          {column.isDone && (
+            <span
+              className="mb-2 w-5 h-5 bg-emerald-500/20 rounded-full flex items-center justify-center"
+              title="Done column"
+            >
+              <svg
+                className="w-3 h-3 text-emerald-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </span>
+          )}
+          <span className="px-2 py-1 bg-slate-700/50 rounded-full text-xs text-slate-400 mb-3">
+            {column.cards.length}
+          </span>
+          <span
+            className="text-white font-medium text-sm whitespace-nowrap"
+            style={{
+              writingMode: 'vertical-rl',
+              textOrientation: 'mixed',
+              transform: 'rotate(180deg)',
+            }}
+          >
+            {column.name}
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  // Expanded view
   return (
     <div
       ref={setSortableNodeRef}
@@ -148,6 +239,30 @@ export default function Column({ column, onCardClick, isDragging: isDraggingProp
               <>
                 <div className="fixed inset-0 z-10" onClick={closeMenu} />
                 <div className="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20 py-1 min-w-[160px]">
+                  {onToggleCollapse && (
+                    <button
+                      onClick={() => {
+                        onToggleCollapse()
+                        closeMenu()
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-700/50 transition-colors cursor-pointer flex items-center gap-2"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                      Collapse
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       startEditing()
