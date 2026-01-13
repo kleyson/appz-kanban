@@ -161,6 +161,26 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
                     className="flex-1 flex flex-col items-center py-4 cursor-pointer hover:bg-slate-700/30 transition-colors"
                     onClick={() => toggleColumnCollapse(column.id)}
                   >
+                    {column.isDone && (
+                      <span
+                        className="mb-2 w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center"
+                        title="Done column"
+                      >
+                        <svg
+                          className="w-4 h-4 text-emerald-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </span>
+                    )}
                     <span className="px-2 py-1 bg-slate-700/50 rounded-full text-sm text-slate-400 mb-3">
                       {column.cards.length}
                     </span>
@@ -207,6 +227,26 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
                           />
                         </svg>
                       </button>
+                      {column.isDone && (
+                        <span
+                          className="flex-shrink-0 w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center"
+                          title="Done column - time stops counting"
+                        >
+                          <svg
+                            className="w-4 h-4 text-emerald-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2.5}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </span>
+                      )}
                       <h2 className="text-lg font-semibold text-white">{column.name}</h2>
                     </div>
                     <span className="px-2.5 py-1 bg-slate-700/50 text-slate-300 rounded-full text-sm font-medium">
@@ -218,9 +258,12 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
                 {/* Cards */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar touch-pan-y overscroll-contain">
                   {column.cards.map((card) => (
-                    <div key={card.id} className="transform scale-105 origin-top">
-                      <KanbanCard card={card} onClick={() => setSelectedCard(card)} />
-                    </div>
+                    <KanbanCard
+                      key={card.id}
+                      card={card}
+                      isDoneColumn={column.isDone}
+                      onClick={() => setSelectedCard(card)}
+                    />
                   ))}
                   {column.cards.length === 0 && (
                     <div className="text-center py-8 text-slate-500">No cards</div>
