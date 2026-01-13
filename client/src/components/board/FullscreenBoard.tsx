@@ -19,6 +19,30 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
   const queryClient = useQueryClient()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<number>>(() => {
+    const stored = localStorage.getItem(`kanban-collapsed-columns-${boardId}`)
+    if (stored) {
+      try {
+        return new Set(JSON.parse(stored) as number[])
+      } catch {
+        return new Set()
+      }
+    }
+    return new Set()
+  })
+
+  const toggleColumnCollapse = (columnId: number) => {
+    setCollapsedColumns((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(columnId)) {
+        newSet.delete(columnId)
+      } else {
+        newSet.add(columnId)
+      }
+      localStorage.setItem(`kanban-collapsed-columns-${boardId}`, JSON.stringify([...newSet]))
+      return newSet
+    })
+  }
 
   // Update clock every second
   useEffect(() => {
@@ -100,34 +124,111 @@ export default function FullscreenBoard({ boardId, onExit }: FullscreenBoardProp
       {/* Board content */}
       <div className="flex-1 overflow-x-auto p-8 touch-pan-x">
         <div className="flex gap-6 h-full">
-          {board.columns.map((column) => (
-            <div
-              key={column.id}
-              className="flex-shrink-0 w-96 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/30 flex flex-col"
-            >
-              {/* Column header */}
-              <div className="px-5 py-4 border-b border-slate-700/30">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-white">{column.name}</h2>
-                  <span className="px-2.5 py-1 bg-slate-700/50 text-slate-300 rounded-full text-sm font-medium">
-                    {column.cards.length}
-                  </span>
+          {board.columns.map((column) => {
+            const isCollapsed = collapsedColumns.has(column.id)
+
+            if (isCollapsed) {
+              return (
+                <div
+                  key={column.id}
+                  className="flex-shrink-0 w-14 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/30 flex flex-col"
+                >
+                  {/* Collapsed header */}
+                  <div className="flex flex-col items-center py-3 border-b border-slate-700/30">
+                    <button
+                      onClick={() => toggleColumnCollapse(column.id)}
+                      className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors cursor-pointer"
+                      title="Expand column"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Vertical title and count */}
+                  <div
+                    className="flex-1 flex flex-col items-center py-4 cursor-pointer hover:bg-slate-700/30 transition-colors"
+                    onClick={() => toggleColumnCollapse(column.id)}
+                  >
+                    <span className="px-2 py-1 bg-slate-700/50 rounded-full text-sm text-slate-400 mb-3">
+                      {column.cards.length}
+                    </span>
+                    <span
+                      className="text-white font-medium text-base whitespace-nowrap"
+                      style={{
+                        writingMode: 'vertical-rl',
+                        textOrientation: 'mixed',
+                        transform: 'rotate(180deg)',
+                      }}
+                    >
+                      {column.name}
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <div
+                key={column.id}
+                className="flex-shrink-0 w-96 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/30 flex flex-col"
+              >
+                {/* Column header */}
+                <div className="px-5 py-4 border-b border-slate-700/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleColumnCollapse(column.id)}
+                        className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors cursor-pointer"
+                        title="Collapse column"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                          />
+                        </svg>
+                      </button>
+                      <h2 className="text-lg font-semibold text-white">{column.name}</h2>
+                    </div>
+                    <span className="px-2.5 py-1 bg-slate-700/50 text-slate-300 rounded-full text-sm font-medium">
+                      {column.cards.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Cards */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar touch-pan-y overscroll-contain">
+                  {column.cards.map((card) => (
+                    <div key={card.id} className="transform scale-105 origin-top">
+                      <KanbanCard card={card} onClick={() => setSelectedCard(card)} />
+                    </div>
+                  ))}
+                  {column.cards.length === 0 && (
+                    <div className="text-center py-8 text-slate-500">No cards</div>
+                  )}
                 </div>
               </div>
-
-              {/* Cards */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar touch-pan-y overscroll-contain">
-                {column.cards.map((card) => (
-                  <div key={card.id} className="transform scale-105 origin-top">
-                    <KanbanCard card={card} onClick={() => setSelectedCard(card)} />
-                  </div>
-                ))}
-                {column.cards.length === 0 && (
-                  <div className="text-center py-8 text-slate-500">No cards</div>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

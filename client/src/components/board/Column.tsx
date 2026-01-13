@@ -72,22 +72,22 @@ export default function Column({
         } ${isDragging || isDraggingProp ? 'shadow-2xl' : ''}`}
       >
         {/* Collapsed Header with drag handle */}
-        <div className="flex flex-col items-center py-3 border-b border-slate-700/30">
-          <button
+        <div className="flex flex-col items-center py-2 border-b border-slate-700/30">
+          <div
             {...attributes}
             {...listeners}
-            className="p-1 text-slate-500 hover:text-slate-300 cursor-grab active:cursor-grabbing touch-none mb-2"
-            title="Drag to reorder"
+            className="w-full px-2 py-2 flex justify-center text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 cursor-grab active:cursor-grabbing touch-none rounded-lg transition-colors"
+            title="Drag to reorder column"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8h16M4 16h16"
-              />
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="9" cy="6" r="1.5" />
+              <circle cx="15" cy="6" r="1.5" />
+              <circle cx="9" cy="12" r="1.5" />
+              <circle cx="15" cy="12" r="1.5" />
+              <circle cx="9" cy="18" r="1.5" />
+              <circle cx="15" cy="18" r="1.5" />
             </svg>
-          </button>
+          </div>
           <button
             onClick={onToggleCollapse}
             className="p-1 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors cursor-pointer"
@@ -155,22 +155,22 @@ export default function Column({
       {/* Column Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700/30">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {/* Drag Handle */}
-          <button
+          {/* Drag Handle - larger touch target with 6-dot grip icon */}
+          <div
             {...attributes}
             {...listeners}
-            className="p-1 text-slate-500 hover:text-slate-300 cursor-grab active:cursor-grabbing touch-none"
-            title="Drag to reorder"
+            className="flex-shrink-0 p-2 -ml-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 cursor-grab active:cursor-grabbing touch-none rounded-lg transition-colors"
+            title="Drag to reorder column"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8h16M4 16h16"
-              />
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="9" cy="6" r="1.5" />
+              <circle cx="15" cy="6" r="1.5" />
+              <circle cx="9" cy="12" r="1.5" />
+              <circle cx="15" cy="12" r="1.5" />
+              <circle cx="9" cy="18" r="1.5" />
+              <circle cx="15" cy="18" r="1.5" />
             </svg>
-          </button>
+          </div>
 
           {isEditing ? (
             <input

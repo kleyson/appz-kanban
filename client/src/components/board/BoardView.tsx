@@ -3,12 +3,15 @@ import { useParams } from 'react-router-dom'
 import {
   DndContext,
   DragOverlay,
-  closestCorners,
+  closestCenter,
+  pointerWithin,
+  rectIntersection,
   KeyboardSensor,
   PointerSensor,
   TouchSensor,
   useSensor,
   useSensors,
+  type CollisionDetection,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -89,19 +92,40 @@ export default function BoardView() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 200,
-        tolerance: 8,
+        delay: 150,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  // Custom collision detection: use closestCenter for columns (more forgiving),
+  // and pointerWithin + rectIntersection for cards
+  const collisionDetection: CollisionDetection = (args) => {
+    const { active } = args
+    const activeId = active.id.toString()
+
+    // For columns, use closestCenter which is much more forgiving
+    // It finds the nearest column by center point distance
+    if (activeId.startsWith('column-')) {
+      return closestCenter(args)
+    }
+
+    // For cards, first try pointerWithin (precise), then fall back to rectIntersection
+    const pointerCollisions = pointerWithin(args)
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions
+    }
+
+    return rectIntersection(args)
+  }
 
   const handleAddColumn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -198,7 +222,7 @@ export default function BoardView() {
       <div className="flex-1 overflow-x-auto overflow-y-hidden touch-pan-x">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
